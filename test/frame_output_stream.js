@@ -6,17 +6,17 @@ var assert = require("assert");
 
 describe("FrameOutputStream", function(){
     
+    var dest;
+    var writable;
+    var output;
+    
+    beforeEach(function(){
+        dest = new Buffer(256);
+        writable = new BufferWritable(dest);
+        output = new FrameOutputStream(writable);
+    });
+    
     describe("#frame", function(){
-        
-        var dest;
-        var writable;
-        var output;
-        
-        beforeEach(function(){
-            dest = new Buffer(256);
-            writable = new BufferWritable(dest);
-            output = new FrameOutputStream(writable);
-        });
         
         it("should return a stream.Writable object", function(){
             assert(output.frame("CONNECT") instanceof stream.Writable);
@@ -119,6 +119,16 @@ describe("FrameOutputStream", function(){
                 
                 secondFrame.end("second");
                 firstFrame.end("first");
+            });
+        });
+    });
+    
+    describe("#heartbeat", function(){
+        it("should write a newline byte", function(done){
+            output.heartbeat(function(){
+                assert(writable.getBytesWritten() === 1);
+                assert(dest[0] === "\n".charCodeAt(0));
+                done();
             });
         });
     });
