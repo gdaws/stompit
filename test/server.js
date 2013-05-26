@@ -19,6 +19,7 @@ describe("Server", function(){
     });
     
     describe("on receiving unknown command", function(){
+        
         it("should send an error frame", function(done){
             
             client.setCommandHandler("ERROR", function(frame){
@@ -26,6 +27,17 @@ describe("Server", function(){
             });
             
             client.sendFrame("SDLFIJ", {}).end();
+        });
+        
+        it("should end the transport socket", function(done){
+            
+            client.getTransportSocket().once("end", function(){
+               done();
+            });
+            
+            client.setCommandHandler("ERROR", function(frame){});
+            
+            client.sendFrame("SDFDS", {}).end();
         });
     });
 });
