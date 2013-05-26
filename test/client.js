@@ -77,6 +77,55 @@ describe("Client", function(){
         });
     });
     
+    describe("#destroy", function(){
+        
+        it("should emit an error event with the passed error argument", function(done){
+            client.once("error", function(exception){
+                assert(exception instanceof Error);
+                assert(exception.message === "test message");
+                done();
+            });
+            client.destroy(new Error("test message"));
+        });
+        
+        it("should call the destroy method on the transport socket", function(done){
+            
+            var socket = client.getTransportSocket();
+            socket.once("error", function(){});
+            socket.once("close", function(){
+                done();
+            });
+            
+            client.once("error", function(){});
+            
+            client.destroy();
+        });
+    });
+    
+    describe("on receiving an unknown command", function(){
+        it("should emit an error event", function(done){
+            
+            client.once("error", function(exception){
+                assert(exception.message === "unknown command");
+                done();
+            });
+            
+            server.sendFrame("FOIDSUF", {}).end();
+        });
+    });
+    
+    describe("on receiving an ERROR frame", function(){
+       
+        it("should emit an error event", function(done){
+            
+            client.once("error", function(){
+                done();
+            });
+            
+            server.sendFrame("ERROR", {}).end();
+        });
+    });
+    
     describe("#subscribe", function(){
         
         it("should subscribe to a destination", function(done){
