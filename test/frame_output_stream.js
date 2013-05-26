@@ -26,6 +26,18 @@ describe("FrameOutputStream", function(){
             
             describe("#end", function(){
                 
+                it("should value-encode command and headers", function(done){
+                    
+                    var frame = output.frame("\n:\\", {
+                        "\n:\\": "\n:\\"
+                    });
+                    
+                    frame.end(function(){
+                        assert(writable.getWrittenSlice().toString() === "\\n\\c\\\\\n\\n\\c\\\\:\\n\\c\\\\\n\n\x00");
+                        done();
+                    });
+                });
+                
                 it("should write empty body frame", function(done){
                     
                     var frame = output.frame("CONNECT", {
