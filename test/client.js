@@ -15,10 +15,16 @@ describe("Client", function(){
         socket = new MemorySocket();
         
         server = new Server(socket);
+        
+        server._disconnect = function(frame, beforeSendResponse){
+            beforeSendResponse(null);
+        };
+        
         client = new Client(socket.getPeerSocket());
     });
     
     describe("#connect", function(){
+        
         it("should establish connection", function(done){
             
             var serverConnected = false;
