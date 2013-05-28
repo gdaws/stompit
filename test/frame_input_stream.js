@@ -153,6 +153,24 @@ describe("FrameInputStream", function(){
             });
         });
         
+        it("should emit an error for an invalid content-length value", function(done){
+            
+            var readable = new BufferReadable(new Buffer("CONNECT\ncontent-length:sadf234\n\n\x00"));
+            var frameInputStream = new FrameInputStream(readable);
+            
+            frameInputStream.on("error", function(exception){
+                assert(exception.message === "invalid content-length");
+                done();
+            });
+            
+            frameInputStream.readFrame(function(frame){
+                var buffer = new Buffer(20);
+                var writable = new BufferWritable(buffer);
+                frame.pipe(writable, {end: false});
+                frame.on("end", function(){});
+            });
+        });
+        
         it("should use the first occuring entry of a repeated header", function(done){
             
             var readable = new BufferReadable(new Buffer("CONNECT\ntest:1\ntest:2\n\n\x00"));
