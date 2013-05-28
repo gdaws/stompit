@@ -153,6 +153,22 @@ describe("FrameInputStream", function(){
             });
         });
         
+        it("should use the first occuring entry of a repeated header", function(done){
+            
+            var readable = new BufferReadable(new Buffer("CONNECT\ntest:1\ntest:2\n\n\x00"));
+            var frameInputStream = new FrameInputStream(readable);
+            
+            frameInputStream.readFrame(function(frame){
+                var buffer = new Buffer(20);
+                var writable = new BufferWritable(buffer);
+                frame.pipe(writable, {end: false});
+                frame.on("end", function(){
+                    assert(frame.headers["test"] === "1");
+                    done();
+                });
+            });
+        });
+        
         describe("IncomingFrame", function(){
             
             describe("#readEmptyBody", function(){
