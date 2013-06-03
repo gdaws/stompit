@@ -1,0 +1,18 @@
+{
+  "name": "stompit",
+  "description": "STOMP client and server",
+  "version": "0.1.1",
+  "keywords": [
+    "stomp", "messages", "queue"
+  ],
+  "licenses":[
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/gdaws/node-stomp/master/LICENSE"
+    }
+  ],
+  "repository":{
+    "type":"git",
+    "url": "https://github.com/gdaws/node-stomp.git"
+  }
+}
