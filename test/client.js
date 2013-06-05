@@ -112,7 +112,7 @@ describe("Client", function(){
         it("should emit an error event", function(done){
             
             client.once("error", function(exception){
-                assert(exception.message === "unknown command");
+                assert(exception.message === "unknown command 'FOIDSUF'");
                 done();
             });
             
