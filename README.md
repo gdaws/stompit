@@ -3,6 +3,7 @@ stompit
 
 A STOMP client and server library in node.js
 
+---
 ### Client Class
 
 Inherits from event.EventEmitter
@@ -49,11 +50,16 @@ Send a frame to the server.
 * options object
  * `onReceipt` callback function. Called when the receipt frame is received.
 
+#### client.begin([options])
+
+Sends a BEGIN frame and returns a new Transaction object. The options argument 
+is passed to the internal sendFrame method call.
+
 #### client.disconnect([callback])
 
 Send a DISCONNECT frame to the server and close the write half of the socket. 
 The callback argument is called after receiving the receipt frame.
-
+- - -
 ### Incoming Frame Class
 
 Inherits from stream.Readable
@@ -70,6 +76,7 @@ header is absent, when a null byte is read.
 
 #### frame.pipe(destination, [options])
 
+- - -
 ### Outgoing Frame Class
 
 Inherits from stream.Writable
@@ -91,6 +98,7 @@ if you've set a content-length header value, that the number of bytes written in
 the frame body doesn't exceed this value. The frame class doesn't check the 
 frame body size is consistent with the content-length header value.
 
+- - -
 ### Message Class
 
 Inherits from the incoming frame class
@@ -107,8 +115,26 @@ can be cleaned up.
 This method has the same behaviour as the ack method except it's used to signal 
 failure to consume the message. 
 
+- - -
 ### Subscription Class
 
 #### subscription.unsubscribe()
 
 Send UNSUBSCRIBE frame to the server.
+
+---
+### Transaction Class
+
+#### transaction.send(headers, [options])
+
+This method wraps the `client.send` method and appends a transaction header. 
+
+#### transaction.abort([options])
+
+Send an ABORT frame to the server. The options argument is passed to the 
+internal sendFrame method call.
+
+#### transaction.commit([options])
+
+Send a COMMIT frame to the server. The options argument is passed to the 
+internal sendFrame method call.
