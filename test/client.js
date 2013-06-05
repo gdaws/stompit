@@ -349,4 +349,93 @@ describe("Client", function(){
             });
         });
     });
+
+    describe("#begin", function(){
+        
+        it("should send a BEGIN frame", function(done){
+            
+            server._begin = function(frame, beforeSendResponse){
+                done();
+            };
+            
+            server._commit = function(){};
+            server._abort = function(){};
+            
+            client.connect("localhost", function(){
+                client.begin();
+            });
+        });
+        
+        describe("Transaction", function(){
+            
+            var setupTransaction = function(callback){
+                client.connect("localhost", function(){
+                    var transaction = client.begin();
+                    callback(transaction);
+                });
+            };
+            
+            it("should be assigned a transaction id", function(done){
+                setupTransaction(function(transaction){
+                   assert(transaction.id === 1);
+                   done();
+                });
+            });
+            
+            describe("#send", function(){
+                it("should create a SEND frame with a transaction header", function(done){
+                    
+                    server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
+                    server._abort = function(){};
+                    server._commit = function(){};
+                    server._send = function(frame){
+                        assert(frame.headers["transaction"] === 1 || frame.headers["transaction"] === "1");
+                        done();
+                    };
+                    
+                    setupTransaction(function(transaction){
+                        var frame = transaction.send({destination:"/abc"});
+                        assert(frame.command === "SEND");
+                        assert(frame.headers["transaction"] === 1 || frame.headers["transaction"] === "1");
+                        frame.end();
+                    });
+                });
+            });
+            
+            describe("#abort", function(){
+                it("should send an ABORT frame with a transaction header", function(done){
+                    
+                    server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
+                    
+                    server._abort = function(frame){
+                        assert(frame.headers["transaction"] === "1");
+                        done();
+                    };
+                    
+                    server._commit = function(){};
+                    
+                    setupTransaction(function(transaction){
+                        transaction.abort();
+                    });
+                });
+            });
+            
+            describe("#commit", function(){
+                it("should send a COMMIT frame with a transaction header", function(done){
+                    
+                    server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
+                    server._abort = function(frame){};
+                    
+                    server._commit = function(frame){
+                        assert(frame.headers["transaction"] === "1");
+                        done();
+                    };
+                    
+                    setupTransaction(function(transaction){
+                        transaction.commit();
+                    });
+                });
+            });
+        });
+    });
 });
