@@ -83,7 +83,22 @@ var socket = net.connect({
             "content-length": contentLength
         };
         
-        var message = client.send(headers);
+        var customHeaders = {};
+        if(argv.header){
+            
+            var customHeaderLines = argv.header instanceof Array ? argv.header : [argv.header];
+            
+            var headerPattern = /([^:]+):(.*)/;
+            
+            for(var i = 0; i < customHeaderLines.length; i++){
+                var match = customHeaderLines[i].match(headerPattern);
+                if(match){
+                    customHeaders[match[1]] = stompit.FrameInputStream.prototype.decodeHeaderValue(match[2]);
+                }
+            }
+        }
+        
+        var message = client.send(stompit.util.extend(headers, customHeaders));
         
         message.once("finish", function(){
             
