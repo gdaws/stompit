@@ -1,0 +1,166 @@
+#!/usr/bin/env node
+
+var argv = require("optimist")
+    .usage("Usage: $0 [options] [command arg...]")
+    .demand("d")
+    .default("p", 61613)
+    .default("h", "localhost")
+    .default("v", false)
+    .boolean("v")
+    .alias("p", "port")
+    .alias("h", "host")
+    .alias("H", "Append header line to subscription frame")
+    .alias("d", "destination")
+    .alias("t", "timeout")
+    .alias("m", "max-consume")
+    .alias("v", "verbose")
+    .argv;
+
+var net             = require("net");
+var util            = require("util");
+var child_process   = require("child_process");
+var stompit         = require("stompit");
+var appUtil         = require("stompit/lib/app_util").init(argv);
+
+var messageHandler;
+
+if(argv._.length > 0){
+    
+    var messageCount = 0;
+    var messageCountLimit = null;
+    var messagesPending = 0;
+    
+    if(argv["max-consume"]){
+        messageCountLimit = argv["max-consume"];
+    }
+    
+    messageHandler = function(message){
+        
+        var client = this;
+        
+        if(messageCountLimit !== null && messageCount >= messageCountLimit){
+            return;
+        }
+        
+        messageCount += 1;
+        messagesPending += 1;
+        
+        var messageNumber = messageCount;
+        var ended = false;
+        
+        var child = child_process.spawn(argv._[0], argv._.slice(1));
+        
+        child.on("error", appUtil.fatalErrorEvent("Child process error: %s"));
+        
+        child.on("exit", function(code){
+            
+            messagesPending -= 1;
+            
+            if(!ended || code === null || code !== 0){
+                appUtil.log("Failed to consume message");
+                message.nack();
+            }
+            else{
+                message.ack();
+                appUtil.log("Consumed message");
+            }
+            
+            if(messagesPending === 0 && messageCountLimit !== null && messageNumber >= messageCountLimit){
+                client.disconnect();
+                return;
+            }
+        });
+        
+        message.on("end", function(){
+            ended = true;
+        });
+        
+        child.stderr.pipe(process.stderr);
+        
+        message.pipe(child.stdin);
+    };
+}
+else{
+    
+    argv.v = false;
+    argv.verbose = false;
+    
+    var messageCount = 0;
+    
+    messageHandler = function(message){
+        
+        messageCount += 1;
+        
+        if(messageCount > 1){
+            return;
+        }
+        
+        var client = this;
+        
+        message.on("end", function(){
+            message.ack();
+            client.disconnect();
+        });
+        
+        message.pipe(process.stdout);
+    };
+}
+
+var socket = net.connect({
+    host: argv.host,
+    port: argv.port,
+    allowHalfOpen: true
+}, function(){
+    
+    appUtil.log("Connected to " + socket.remoteAddress + ":" + socket.remotePort);
+    
+    var client = new stompit.Client(socket);
+    
+    client.on("error", appUtil.fatalErrorEvent("%s"));
+    
+    client.connect({}, function(server){
+        
+        appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
+        
+        var headers = {
+            "destination": argv.destination,
+            "ack": "client-individual"
+        };
+        
+        var userDefinedHeaders = {};
+        if(argv.header){
+            userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
+        }
+        
+        var timeout = null;
+        
+        var startTimeout = function(){
+            
+            if(timeout !== null){
+                clearTimeout(timeout);
+            }
+            
+            if(argv.timeout){
+                timeout = setTimeout(function(){
+                    appUtil.log("Idle timeout");
+                    client.disconnect();
+                }, argv.timeout * 1000);
+            }
+        };
+        
+        startTimeout();
+        
+        client.subscribe(util.extend(headers, userDefinedHeaders), function(message){
+            
+            message.once("end", startTimeout);
+            
+            messageHandler.call(client, message);
+        });
+    });
+});
+
+socket.on("error", appUtil.fatalErrorEvent("Socket error: %s"));
+
+socket.on("end", function(){
+    appUtil.log("Disconnected from server");
+});
