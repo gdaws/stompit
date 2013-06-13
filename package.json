@@ -1,7 +1,7 @@
 {
   "name": "stompit",
   "description": "STOMP client and server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "keywords": [
     "stomp", "messages", "queue"
   ],
@@ -14,5 +14,13 @@
   "repository":{
     "type":"git",
     "url": "https://github.com/gdaws/node-stomp.git"
+  },
+  "dependencies" :{
+    "node" : ">=0.10",
+    "mocha" : "*",
+    "optimist": "*"
+  },
+  "scripts": {
+    "test": "mocha"
   }
 }
