@@ -1,6 +1,8 @@
 stompit
 ==========
 
+[![Build Status](https://travis-ci.org/gdaws/node-stomp.png)](https://travis-ci.org/gdaws/node-stomp)
+
 A STOMP client and server library in node.js
 
 ---
