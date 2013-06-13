@@ -22,23 +22,7 @@ var net         = require("net");
 var fs          = require("fs");
 var util        = require("util");
 var stompit     = require("stompit");
-
-function log(message){
-    if(argv.verbose){
-        util.print(message + "\n");
-    }
-}
-
-function fatalError(message){
-    process.stderr.write(message + "\n");
-    process.exit(1);
-}
-
-function fatalErrorEvent(format){
-    return function(error){
-        fatalError(util.format(format, error.message));
-    };
-}
+var appUtil     = require("stompit/lib/app_util").init(argv);
 
 var input = process.stdin;
 var contentLength = argv["content-length"];
@@ -52,12 +36,12 @@ if(argv.file){
             contentLength = fs.statSync(filename).size;
         }
         catch(e){
-            fatalError(e.message);
+            appUtil.fatalError(e.message);
         }
     }
     
     input = fs.createReadStream(argv.file);
-    input.on("error", fatalErrorEvent("File error: %s"));
+    input.on("error", appUtil.fatalErrorEvent("File error: %s"));
 }
 
 var socket = net.connect({
@@ -66,15 +50,15 @@ var socket = net.connect({
     allowHalfOpen: true
 }, function(){
     
-    log("Connected to " + socket.address().address + ":" + socket.address().port);
+    appUtil.log("Connected to " + socket.address().address + ":" + socket.address().port);
     
     var client = new stompit.Client(socket);
     
-    client.on("error", fatalErrorEvent("%s"));
+    client.on("error", appUtil.fatalErrorEvent("%s"));
     
     client.connect({}, function(server){
         
-        log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
+        appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
         
         var destination = argv._[0];
         
@@ -102,7 +86,7 @@ var socket = net.connect({
         
         message.once("finish", function(){
             
-            log(util.format("Sent message to '%s'", destination));
+            appUtil.log(util.format("Sent message to '%s'", destination));
             
             client.disconnect();
         });
@@ -111,8 +95,8 @@ var socket = net.connect({
     });
 });
 
-socket.on("error", fatalErrorEvent("Socket error: %s"));
+socket.on("error", appUtil.fatalErrorEvent("Socket error: %s"));
 
 socket.on("end", function(){
-    log("Disconnected from server");
+    appUtil.log("Disconnected from server");
 });
