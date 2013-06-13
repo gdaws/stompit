@@ -38,6 +38,19 @@ describe("FrameOutputStream", function(){
                     });
                 });
                 
+                it("should ignore null properties in the headers hash", function(done){
+                    
+                    var frame = output.frame("CONNECT", {
+                        "accepted-version": "1.1",
+                        "host": null
+                    });
+                    
+                    frame.end(function(){
+                        assert(writable.getWrittenSlice().toString() === "CONNECT\naccepted-version:1.1\n\n\x00");
+                        done();
+                    });
+                });
+                
                 it("should write empty body frame", function(done){
                     
                     var frame = output.frame("CONNECT", {
