@@ -50,7 +50,7 @@ var socket = net.connect({
     allowHalfOpen: true
 }, function(){
     
-    appUtil.log("Connected to " + socket.address().address + ":" + socket.address().port);
+    appUtil.log("Connected to " + socket.remoteAddress + ":" + socket.remotePort);
     
     var client = new stompit.Client(socket);
     
@@ -67,22 +67,12 @@ var socket = net.connect({
             "content-length": contentLength
         };
         
-        var customHeaders = {};
+        var userDefinedHeaders = {};
         if(argv.header){
-            
-            var customHeaderLines = argv.header instanceof Array ? argv.header : [argv.header];
-            
-            var headerPattern = /([^:]+):(.*)/;
-            
-            for(var i = 0; i < customHeaderLines.length; i++){
-                var match = customHeaderLines[i].match(headerPattern);
-                if(match){
-                    customHeaders[match[1]] = stompit.FrameInputStream.prototype.decodeHeaderValue(match[2]);
-                }
-            }
+            userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
         }
         
-        var message = client.send(stompit.util.extend(headers, customHeaders));
+        var message = client.send(stompit.util.extend(headers, userDefinedHeaders));
         
         message.once("finish", function(){
             
