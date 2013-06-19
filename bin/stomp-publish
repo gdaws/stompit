@@ -53,7 +53,11 @@ var socket = net.connect({
     
     var client = new stompit.Client(socket);
     
-    client.on("error", appUtil.fatalErrorEvent("%s"));
+    client.on("error", appUtil.fatalErrorEvent("Stomp error: %s"));
+    
+    client.on("end", function(){
+        appUtil.log("Disconnected from server");
+    });
     
     client.connect({}, function(server){
         
@@ -85,7 +89,3 @@ var socket = net.connect({
 });
 
 socket.on("error", appUtil.fatalErrorEvent("Socket error: %s"));
-
-socket.on("end", function(){
-    appUtil.log("Disconnected from server");
-});

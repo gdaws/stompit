@@ -376,6 +376,11 @@ describe("Client", function(){
             };
             
             it("should be assigned a transaction id", function(done){
+                
+                server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
+                server._commit = function(){};
+                server._abort = function(){};
+                
                 setupTransaction(function(transaction){
                    assert(transaction.id === 1);
                    done();

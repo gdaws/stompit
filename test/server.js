@@ -31,6 +31,8 @@ describe("Server", function(){
                 done();
             });
             
+            client.on("error", function(){});
+            
             client.sendFrame("SDLFIJ", {}).end();
         });
         
@@ -41,6 +43,8 @@ describe("Server", function(){
             });
             
             client.setCommandHandler("ERROR", function(frame){});
+            
+            client.on("error", function(){});
             
             client.sendFrame("SDFDS", {}).end();
         });
