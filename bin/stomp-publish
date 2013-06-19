@@ -13,8 +13,11 @@ var argv = require("optimist")
     .alias("l", "content-length")
     .alias("f", "file")
     .alias("v", "verbose")
+    .alias("i", "virtual-host")
+    .alias("a", "login")
     .describe("H", "Append header line")
     .describe("f", "Message content")
+    .describe("a", "Login:passcode pair")
     .argv;
 
 var net         = require("net");
@@ -59,7 +62,19 @@ var socket = net.connect({
         appUtil.log("Disconnected from server");
     });
     
-    client.connect({}, function(server){
+    var headers = {
+        "host": argv["virtual-host"] || argv.host
+    };
+    
+    if(argv.login){
+        var match = argv.login.match(/^([^:]+):(.+)$/);
+        if(match){
+            headers["login"] = match[1];
+            headers["passcode"] = match[2];
+        }
+    }
+    
+    client.connect(headers, function(server){
         
         appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
         
