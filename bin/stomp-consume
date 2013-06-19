@@ -150,7 +150,7 @@ var socket = net.connect({
         
         startTimeout();
         
-        client.subscribe(util.extend(headers, userDefinedHeaders), function(message){
+        client.subscribe(util.extend(userDefinedHeaders, headers), function(message){
             
             message.once("end", startTimeout);
             

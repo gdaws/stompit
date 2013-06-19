@@ -90,7 +90,7 @@ var socket = net.connect({
             userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
         }
         
-        var message = client.send(stompit.util.extend(headers, userDefinedHeaders));
+        var message = client.send(stompit.util.extend(userDefinedHeaders, headers));
         
         message.once("finish", function(){
             
