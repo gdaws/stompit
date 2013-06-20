@@ -47,11 +47,46 @@ describe("Client", function(){
     });
     
     describe("#disconnect", function(){
+        
         it("should disconnect", function(done){
             client.connect("localhost", function(){
                 client.disconnect(function(){
                     done();
                 });
+            });
+        });
+        
+        it("should request a receipt", function(done){
+            client.connect("localhost", function(){
+                server._disconnect = function(frame, beforeSendResponse){
+                    beforeSendResponse();
+                    assert(frame.headers.hasOwnProperty("receipt"));
+                    done();
+                };
+                client.disconnect();
+            });
+        });
+        
+        it("should emit finish event before emitting end event", function(done){
+            client.connect("localhost", function(){
+                
+                var finished = false;
+                var ended = false;
+                
+                // We are ending the connection
+                client.on("finish", function(){
+                    finished = true;
+                    assert(!ended);
+                });
+                
+                // The remote host has ended the connection
+                client.on("end", function(){
+                    ended = true;
+                    assert(finished);
+                    done();
+                });
+                
+                client.disconnect();
             });
         });
     });
