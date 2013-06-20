@@ -76,7 +76,7 @@ describe("MemorySocket", function(){
                 }
             });
             
-            peer.on("close", function(){
+            peer.on("end", function(){
                 
                 peerClosed = true;
                 
@@ -87,6 +87,8 @@ describe("MemorySocket", function(){
             
             local.destroy();
         });
+        
+        // it should emit an end event on the peer socket
     });
     
     describe("#end", function(){

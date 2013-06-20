@@ -54,7 +54,7 @@ describe("Server", function(){
         
         it("should end the transport socket", function(done){
             client.connect("localhost", function(){
-                server.getTransportSocket().once("end", function(){
+                client.getTransportSocket().once("end", function(){
                     done();
                 });
                 client.disconnect();
