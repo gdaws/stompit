@@ -174,6 +174,17 @@ describe("Client", function(){
             
             server.sendFrame("ERROR", {}).end();
         });
+        
+        it("should close the transport", function(done){
+            
+            client.getTransportSocket().on("close", function(){
+                done();    
+            });
+            
+            client.once("error", function(){});
+            
+            server.sendFrame("ERROR", {}).end();
+        });
     });
     
     describe("#subscribe", function(){
