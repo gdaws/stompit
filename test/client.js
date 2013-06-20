@@ -141,6 +141,15 @@ describe("Client", function(){
             
             client.destroy();
         });
+        
+        it("should not emit an error event if no error argument is passed", function(done){
+            client.on("error", function(){assert(false);});
+            client.destroy();
+            process.nextTick(function(){
+                done();
+            });
+        });
+        
     });
     
     describe("on receiving an unknown command", function(){
