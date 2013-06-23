@@ -272,6 +272,20 @@ describe("Client", function(){
                     "destination": "/test",
                     "content-type": "text/plain"
                 }).end("hello");
+                
+                server.sendFrame("MESSAGE", {
+                    "subscription": id,
+                    "message-id": "d",
+                    "destination": "/test",
+                    "content-type": "text/plain"
+                }).end("hello");
+                
+                server.sendFrame("MESSAGE", {
+                    "subscription": id,
+                    "message-id": "e",
+                    "destination": "/test",
+                    "content-type": "text/plain"
+                }).end("hello");
             };
             
             var acks = [];
@@ -286,34 +300,55 @@ describe("Client", function(){
                     case 1:
                         assert(acks[0] == "b");
                         break;
-                    case 2:
-                        assert(acks[1] == "c");
+                    case 3:
+                        assert(acks[2] == "e");
                         done();
                         break;
                     default: assert(false);
                 }
             };
             
-            server._nack = fail;
+            server._nack = function(frame, beforeSendResponse){
+                
+                acks.push(frame.headers["message-id"]);
+                
+                beforeSendResponse();
+                
+                switch(acks.length){
+                    case 2:
+                        assert(acks[1] == "c");
+                        break;
+                    default: assert(false);
+                }
+            };
+            
             server._unsubscribe = fail;
             
             client.connect("localhost", function(){
                 
                 var messages = [];
                 
-                var subscription = client.subscribe({destination: "/test", ack: "client"}, function(message){
+                client.subscribe({destination: "/test", ack: "client"}, function(message){
                     
                     messages.push(message);
                     
                     var writable = new BufferWritable(new Buffer(26));
                     
                     message.on("end", function(){
-                        if(messages.length == 2){
-                            messages[1].ack();
-                            messages[0].ack();
-                        }
-                        else if(messages.length == 3){
-                            messages[2].ack();
+                        
+                        switch(messages.length){
+                            case 2:
+                                messages[1].ack();
+                                messages[0].ack();
+                                // Ack for a and b
+                                break;
+                            case 5:
+                                messages[4].ack();
+                                messages[2].nack();
+                                // Nack for c
+                                messages[3].ack();
+                                // Ack for d and e
+                                break;
                         }
                     });
                     
@@ -370,7 +405,7 @@ describe("Client", function(){
             
             client.connect("localhost", function(){
                 
-                var subscription = client.subscribe({destination: "/test", ack: "client"}, function(message){
+                client.subscribe({destination: "/test", ack: "client-individual"}, function(message){
                     
                     var writable = new BufferWritable(new Buffer(26));
                     
