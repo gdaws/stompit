@@ -6,14 +6,18 @@ var argv = require("optimist")
     .default("p", 61613)
     .default("h", "localhost")
     .default("v", false)
+    .default("a", "client-individual")
     .boolean("v")
     .alias("p", "port")
     .alias("h", "host")
-    .alias("H", "Append header line to subscription frame")
+    .alias("H", "header")
     .alias("d", "destination")
+    .alias("a", "ack")
     .alias("t", "timeout")
     .alias("m", "max-consume")
     .alias("v", "verbose")
+    .describe("H", "Append header line to subscription frame")
+    .describe("a", "Set subscription ack mode")
     .argv;
 
 var net             = require("net");
@@ -124,7 +128,7 @@ var socket = net.connect({
         
         var headers = {
             "destination": argv.destination,
-            "ack": "client-individual"
+            "ack": argv.ack
         };
         
         var userDefinedHeaders = {};
