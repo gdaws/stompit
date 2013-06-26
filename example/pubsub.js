@@ -1,45 +1,28 @@
-var net = require("net");
-var Client = require("../lib/client");
+var stompit = require("stompit");
 
-var log = console.log;
+var headers = {
+    "host": "/"
+};
 
-var socket = net.connect({port: 61613, allowHalfOpen: true}, function(){
+var socket = stompit.connect({connectHeaders: headers}, function(){
     
-    log("Established TCP connection on port " + socket.remotePort);
+    var queueName = "/queue/pubsub-example";
     
-    socket.once("close", function(){
-       log("Closed TCP connection");
-    });
-    
-    var client = new Client(socket);
-    
-    client.on("error", function(exception){
-        log(exception.message);
-    });
-    
-    client.on("end", function(){
-       log("Ended session");
-    });
-    
-    client.connect(null, function(){
+    socket.subscribe({destination: queueName}, function(message){
         
-        log("Established STOMP session");
+        console.log("Receiving message " + message.headers["message-id"]);
         
-        var dst = "/queue/pubsub-example";
-        
-        client.subscribe({destination: dst, ack: "client"}, function(message){
+        message.once("end", function(){
             
-            log("Receiving message " + message.headers["message-id"]);
+            console.log("\nEnd of message");
             
-            message.once("end", function(){
-                log("\nEnd of message");
-                message.ack();
-                client.disconnect();
-            });
+            message.ack();
             
-            message.pipe(process.stdout);
+            socket.disconnect();
         });
         
-        client.send({destination: dst}).end("HELLO");
+        message.pipe(process.stdout);
     });
+    
+    socket.send({destination: queueName}).end("HELLO");
 });
