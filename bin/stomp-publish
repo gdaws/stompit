@@ -4,7 +4,7 @@ var argv = require("optimist")
     .usage("Usage: $0 [options] destination")
     .demand(1)
     .default("p", 61613)
-    .default("h", "localhost")
+    .default("h", "127.0.0.1")
     .default("v", false)
     .boolean("v")
     .alias("p", "port")
@@ -20,10 +20,9 @@ var argv = require("optimist")
     .describe("a", "Login:passcode pair")
     .argv;
 
-var net         = require("net");
 var fs          = require("fs");
-var util        = require("util");
 var stompit     = require("stompit");
+var util        = require("stompit/lib/util");
 var appUtil     = require("stompit/lib/app_util").init(argv);
 
 var input = process.stdin;
@@ -46,61 +45,60 @@ if(argv.file){
     input.on("error", appUtil.fatalErrorEvent("File error: %s"));
 }
 
-var socket = net.connect({
+var connectHeaders = {
+    host: argv["virtual-host"] || argv.host
+};
+
+if(argv.login){
+    var match = argv.login.match(/^([^:]+):(.+)$/);
+    if(match){
+        connectHeaders["login"] = match[1];
+        connectHeaders["passcode"] = match[2];
+    }
+}
+
+var socket = stompit.connect({
     host: argv.host,
     port: argv.port,
-    allowHalfOpen: true
-}, function(){
-    
-    appUtil.log("Connected to " + socket.remoteAddress + ":" + socket.remotePort);
-    
-    var client = new stompit.Client(socket);
-    
-    client.on("error", appUtil.fatalErrorEvent("Stomp error: %s"));
-    
-    client.on("end", function(){
-        appUtil.log("Disconnected from server");
-    });
-    
-    var headers = {
-        "host": argv["virtual-host"] || argv.host
-    };
-    
-    if(argv.login){
-        var match = argv.login.match(/^([^:]+):(.+)$/);
-        if(match){
-            headers["login"] = match[1];
-            headers["passcode"] = match[2];
-        }
-    }
-    
-    client.connect(headers, function(server){
-        
-        appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
-        
-        var destination = argv._[0];
-        
-        var headers = {
-            "destination": destination,
-            "content-length": contentLength
-        };
-        
-        var userDefinedHeaders = {};
-        if(argv.header){
-            userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
-        }
-        
-        var message = client.send(stompit.util.extend(userDefinedHeaders, headers));
-        
-        message.once("finish", function(){
-            
-            appUtil.log(util.format("Sent message to '%s'", destination));
-            
-            client.disconnect();
-        });
-        
-        input.pipe(message);
-    });
+    allowHalfOpen: true,
+    connectHeaders: connectHeaders
 });
 
-socket.on("error", appUtil.fatalErrorEvent("Socket error: %s"));
+socket.on("error", appUtil.fatalErrorEvent());
+
+socket.on("socket-connect", function(){
+    var transportSocket = socket.getTransportSocket();
+    appUtil.log("Connected to " + transportSocket.remoteAddress + ":" + transportSocket.remotePort);
+});
+
+socket.on("connect", function(server){
+    
+    appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
+    
+    var destination = argv._[0];
+    
+    var headers = {
+        "destination": destination,
+        "content-length": contentLength
+    };
+    
+    var userDefinedHeaders = {};
+    if(argv.header){
+        userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
+    }
+    
+    var message = socket.send(util.extend(userDefinedHeaders, headers));
+    
+    message.once("finish", function(){
+        
+        appUtil.log(util.format("Sent message to '%s'", destination));
+        
+        socket.disconnect();
+    });
+    
+    input.pipe(message);
+});
+
+socket.on("end", function(){
+    appUtil.log("Disconnected from server");
+});

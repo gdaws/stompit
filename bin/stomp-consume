@@ -10,17 +10,19 @@ var argv = require("optimist")
     .boolean("v")
     .alias("p", "port")
     .alias("h", "host")
+    .alias("i", "virtual-host")
+    .alias("a", "login")
     .alias("H", "header")
     .alias("d", "destination")
-    .alias("a", "ack")
+    .alias("k", "ack")
     .alias("t", "timeout")
     .alias("m", "max-consume")
     .alias("v", "verbose")
     .describe("H", "Append header line to subscription frame")
-    .describe("a", "Set subscription ack mode")
+    .describe("k", "Set subscription ack mode")
+    .describe("a", "Login:passcode pair")
     .argv;
 
-var net             = require("net");
 var util            = require("util");
 var child_process   = require("child_process");
 var stompit         = require("stompit");
@@ -110,60 +112,71 @@ else{
     };
 }
 
-var socket = net.connect({
+var connectHeaders = {
+    host: argv["virtual-host"] || argv.host
+};
+
+if(argv.login){
+    var match = argv.login.match(/^([^:]+):(.+)$/);
+    if(match){
+        connectHeaders["login"] = match[1];
+        connectHeaders["passcode"] = match[2];
+    }
+}
+
+var socket = stompit.connect({
     host: argv.host,
     port: argv.port,
-    allowHalfOpen: true
-}, function(){
-    
-    appUtil.log("Connected to " + socket.remoteAddress + ":" + socket.remotePort);
-    
-    var client = new stompit.Client(socket);
-    
-    client.on("error", appUtil.fatalErrorEvent("%s"));
-    
-    client.connect({}, function(server){
-        
-        appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
-        
-        var headers = {
-            "destination": argv.destination,
-            "ack": argv.ack
-        };
-        
-        var userDefinedHeaders = {};
-        if(argv.header){
-            userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
-        }
-        
-        var timeout = null;
-        
-        var startTimeout = function(){
-            
-            if(timeout !== null){
-                clearTimeout(timeout);
-            }
-            
-            if(argv.timeout){
-                timeout = setTimeout(function(){
-                    appUtil.log("Idle timeout");
-                    client.disconnect();
-                }, argv.timeout * 1000);
-            }
-        };
-        
-        startTimeout();
-        
-        client.subscribe(util.extend(userDefinedHeaders, headers), function(message){
-            
-            message.once("end", startTimeout);
-            
-            messageHandler.call(client, message);
-        });
-    });
+    allowHalfOpen: true,
+    connectHeaders: connectHeaders
 });
 
-socket.on("error", appUtil.fatalErrorEvent("Socket error: %s"));
+socket.on("error", appUtil.fatalErrorEvent());
+
+socket.on("socket-connect", function(){
+    var transportSocket = socket.getTransportSocket();
+    appUtil.log("Connected to " + transportSocket.remoteAddress + ":" + transportSocket.remotePort);
+});
+
+socket.on("connect", function(server){
+    
+    appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
+    
+    var headers = {
+        "destination": argv.destination,
+        "ack": argv.ack
+    };
+    
+    var userDefinedHeaders = {};
+    if(argv.header){
+        userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
+    }
+    
+    var timeout = null;
+    
+    var startTimeout = function(){
+        
+        if(timeout !== null){
+            clearTimeout(timeout);
+        }
+        
+        if(argv.timeout){
+            timeout = setTimeout(function(){
+                appUtil.log("Idle timeout");
+                socket.disconnect();
+            }, argv.timeout * 1000);
+        }
+    };
+    
+    startTimeout();
+    
+    socket.subscribe(util.extend(userDefinedHeaders, headers), function(message){
+        
+        message.once("end", startTimeout);
+        
+        messageHandler.call(socket, message);
+    });
+});
 
 socket.on("end", function(){
     appUtil.log("Disconnected from server");
