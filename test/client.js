@@ -89,6 +89,24 @@ describe("Client", function(){
                 client.disconnect();
             });
         });
+        
+        it("should cause an error on sending any subsequent frame", function(done){
+            client.connect("localhost", function(){
+                
+                server._send = function(frame, beforeSendResponse){};
+                
+                server.on("error", function(){});
+                
+                client.on("error", function(e){
+                    assert(e.message === "cannot send frame on closed stream");
+                    done();
+                });
+                
+                client.disconnect();
+                
+                client.send().end();
+            });
+        });
     });
     
     describe("#send", function(){
@@ -439,7 +457,7 @@ describe("Client", function(){
             });
         });
     });
-
+    
     describe("#begin", function(){
         
         it("should send a BEGIN frame", function(done){
