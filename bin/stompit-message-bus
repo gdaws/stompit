@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+var optimist = require("optimist")
+    .usage("Usage: $0 [options]")
+    .default("p", 61613)
+    .default("b", "127.0.0.1")
+    .default("v", true)
+    .boolean("v")
+    .alias("p", "port")
+    .alias("b", "bind-address")
+    .alias("v", "verbose")
+    .alias("h", "help");
+
+var argv = optimist.argv;
+
+var net         = require("net");
+var util        = require("util");
+var appUtil     = require("stompit/lib/app_util").init(argv);
+var stompit     = require("stompit");
+var MessageBus  = require("stompit/lib/message_bus");
+
+if(argv.help){
+    optimist.showHelp();
+    process.exit(0);
+}
+
+var server = new MessageBus();
+
+var serverSocket = net.createServer({
+    allowHalfOpen: true
+}, server.addClient.bind(server));
+
+serverSocket.on("error", appUtil.fatalErrorEvent("Server socket error: %s"));
+
+serverSocket.listen(argv.port, argv["bind-address"], function(){
+    var localAddress = serverSocket.address();
+    appUtil.log(util.format("Server listening on %s:%s", localAddress.address, localAddress.port));
+});
