@@ -80,6 +80,25 @@ describe("FrameOutputStream", function(){
                         done();
                     });
                 });
+                
+                it("should prevent any future writes", function(done){
+                    
+                    var frame = output.frame("CONNECT", {
+                        "accepted-version": "1.1",
+                        "host": "example.com"
+                    });
+                    
+                    frame.end("Body", function(error){
+                        process.nextTick(function(){
+                            
+                            frame.on("error", function(){
+                                done();
+                            });
+                            
+                            frame.write("More");
+                        });
+                    });
+                });
             });
             
             describe("#write", function(){
