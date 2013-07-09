@@ -169,11 +169,10 @@ describe("FrameOutputStream", function(){
     
     describe("#heartbeat", function(){
         it("should write a newline byte", function(done){
-            output.heartbeat(function(){
-                assert(writable.getBytesWritten() === 1);
-                assert(dest[0] === "\n".charCodeAt(0));
-                done();
-            });
+            output.heartbeat();
+            assert(writable.getBytesWritten() === 1);
+            assert(dest[0] === "\n".charCodeAt(0));
+            done();
         });
     });
 });
