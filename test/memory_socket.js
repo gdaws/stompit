@@ -61,28 +61,11 @@ describe("MemorySocket", function(){
        
         it("should emit a close event", function(done){
             
-            var local = new MemorySocket();
+            var local = new MemorySocket({allowHalfOpen: false});
             var peer = local.getPeerSocket();
             
-            var localClosed = false;
-            var peerClosed = false;
-            
             local.on("close", function(){
-                
-                localClosed = true;
-                
-                if(localClosed && peerClosed){
-                    done();
-                }
-            });
-            
-            peer.on("end", function(){
-                
-                peerClosed = true;
-                
-                if(localClosed && peerClosed){
-                    done();
-                }
+                done();
             });
             
             local.destroy();
@@ -102,9 +85,12 @@ describe("MemorySocket", function(){
                 done();
             });
             
-            peer.read();
+            peer.on("readable", function(){
+                peer.read(); 
+            });
             
             local.end();
+            peer.read();
         });
     });
 });
