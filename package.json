@@ -1,7 +1,7 @@
 {
   "name": "stompit",
   "description": "STOMP client and server",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "keywords": [
     "stomp", "messages", "queue"
   ],
