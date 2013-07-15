@@ -122,5 +122,27 @@ describe("MessageBusConnection", function(){
             assert(false);
         });
     });
+    
+    it("should disconnect the consumer when the publisher disconnects before finish sending a message", function(done){
+        
+        consumerServerConnection.on("error", function(){});
+        publisherServerConnection.on("error", function(){});
+        
+        consumer.subscribe({"destination": "/test", "ack": "client-individual"}, function(message){
+            var buffer = new BufferWritable(new Buffer(100));
+            message.on("end", function(){
+                message.nack();
+            });
+            message.pipe(buffer);
+        });
+        
+        consumer.on("error", function(){
+            done();
+        });
+        
+        publisher.send({"destination": "/test"}).write("hello", function(){
+            publisher.destroy();
+        });
+    });
 });
 
