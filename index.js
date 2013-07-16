@@ -1,6 +1,4 @@
 
-var helper = require("./lib/helper");
-
 module.exports = {
     
     Client: require("./lib/client"),
@@ -8,5 +6,5 @@ module.exports = {
     FrameInputStream: require("./lib/frame_input_stream"),
     FrameOutputStream: require("./lib/frame_output_stream"),
     
-    connect: helper.connect
+    connect: require("./lib/connect")
 };
