@@ -130,6 +130,17 @@ describe("FrameInputStream", function(){
             
         });
         
+        it("should parse header line with multiple colons", function(done){
+            
+            var readable = new BufferReadable(new Buffer("CONNECT\nheader1::value:::value:\n\n\x00"));
+            var frameInputStream = new FrameInputStream(readable);
+            
+            frameInputStream.readFrame(function(frame){
+                assert(frame.headers["header1"] === ":value:::value:");
+                done();
+            });
+        });
+        
         it("should emit an error for an undefined escape sequence", function(done){
             
             var readable = new BufferReadable(new Buffer("CONNECT\nheader:\\rtest\n\n\x00"));
