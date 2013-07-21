@@ -1,10 +1,23 @@
 
+var Messaging = require("./lib/messaging");
+
 module.exports = {
-    
-    Client: require("./lib/client"),
     
     FrameInputStream: require("./lib/frame_input_stream"),
     FrameOutputStream: require("./lib/frame_output_stream"),
     
-    connect: require("./lib/connect")
+    Client: require("./lib/client"),
+    
+    MessageBus: require("./lib/message_bus"),
+    
+    Failover: require("./lib/failover"),
+    Messaging: Messaging,
+    
+    connect: require("./lib/connect"),
+    
+    broker: function(){
+        var messaging = Object.create(Messaging.prototype);
+        Messaging.apply(messaging, arguments);
+        return messaging;
+    }
 };
