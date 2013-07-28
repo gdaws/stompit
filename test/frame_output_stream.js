@@ -33,7 +33,7 @@ describe("FrameOutputStream", function(){
                     });
                     
                     frame.end(function(){
-                        assert(writable.getWrittenSlice().toString() === "\\n\\c\\\\\n\\n\\c\\\\:\\n\\c\\\\\n\n\x00");
+                        assert(writable.getWrittenSlice().toString() === "\\n\\c\\\\\n\\n\\c\\\\:\\n\\c\\\\\n\n\x00\n");
                         done();
                     });
                 });
@@ -46,7 +46,7 @@ describe("FrameOutputStream", function(){
                     });
                     
                     frame.end(function(){
-                        assert(writable.getWrittenSlice().toString() === "CONNECT\naccepted-version:1.1\n\n\x00");
+                        assert(writable.getWrittenSlice().toString() === "CONNECT\naccepted-version:1.1\n\n\x00\n");
                         done();
                     });
                 });
@@ -75,7 +75,7 @@ describe("FrameOutputStream", function(){
                     
                     frame.end("Body", function(error){
                         assert(!error);
-                        var expected = "CONNECT\naccepted-version:1.1\nhost:example.com\n\nBody\x00";
+                        var expected = "CONNECT\naccepted-version:1.1\nhost:example.com\n\nBody\x00\n";
                         assert(dest.toString().substring(0, expected.length) === expected);
                         done();
                     });
@@ -156,7 +156,7 @@ describe("FrameOutputStream", function(){
                 
                 thirdFrame.end("third", function(error){
                     assert(!error);
-                    var expected = "CONNECT\n\nfirst\x00SEND\n\nsecond\x00SEND\n\nthird\x00";
+                    var expected = "CONNECT\n\nfirst\x00\nSEND\n\nsecond\x00\nSEND\n\nthird\x00\n";
                     assert(dest.toString().substring(0, expected.length) === expected);
                     done();
                 });
