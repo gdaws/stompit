@@ -506,6 +506,58 @@ describe("Client", function(){
             });
         });
         
+        it("should allow a transaction-id argument", function(done){
+            
+            server._begin = function(frame, beforeSendResponse){
+                assert(frame.headers.transaction === "myTransactionID");
+                done();
+            };
+            
+            server._commit = function(){};
+            server._abort = function(){};
+            
+            client.connect("localhost", function(){
+                client.begin("myTransactionID");
+            });
+        });
+        
+        it("should allow a header argument", function(done){
+            
+            server._begin = function(frame, beforeSendResponse){
+                assert(frame.headers.transaction === "transaction_1");
+                assert(frame.headers.test === "1");
+                done();
+            };
+            
+            server._commit = function(){};
+            server._abort = function(){};
+            
+            client.connect("localhost", function(){
+                client.begin({
+                    transaction: "transaction_1",
+                    test: 1
+                });
+            });
+        });
+        
+        it("should generate a transaction id if the transaction header is missing from the headers object", function(done){
+            
+            server._begin = function(frame, beforeSendResponse){
+                assert(frame.headers.transaction === "1");
+                assert(frame.headers.test === "2");
+                done();
+            };
+            
+            server._commit = function(){};
+            server._abort = function(){};
+            
+            client.connect("localhost", function(){
+                client.begin({
+                    test: 2
+                });
+            });
+        });
+        
         describe("Transaction", function(){
             
             var setupTransaction = function(callback){
