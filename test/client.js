@@ -239,6 +239,19 @@ describe("Client", function(){
             });
         });
         
+        it("should treat the first argument as the destination if it's a string value", function(done){
+            
+            server._subscribe = function(frame, beforeSendResponse){
+                done();
+            };
+            
+            server._unsubscribe = function(){assert(false);};
+            
+            client.connect("localhost", function(){
+                client.subscribe("/test", function(){});
+            });
+        });
+        
         it("should callback on message", function(done){
             
             server._subscribe = function(frame, beforeSendResponse){
