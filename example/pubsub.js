@@ -1,28 +1,22 @@
 var stompit = require("stompit");
 
-var headers = {
-    "host": "/"
-};
+var broker = stompit.broker([
+    {host: "localhost", port: 61613}
+]);
 
-var socket = stompit.connect({connectHeaders: headers}, function(){
+broker.send("/queue/pubsub-example", "SUCCESS!\n");
+
+var subscription = broker.subscribe("/queue/pubsub-example", function(error, message){
     
-    var queueName = "/queue/pubsub-example";
+    if(error){
+        console.log("failed to subscribe");
+        return;
+    }
     
-    socket.subscribe({destination: queueName}, function(message){
-        
-        console.log("Receiving message " + message.headers["message-id"]);
-        
-        message.once("end", function(){
-            
-            console.log("\nEnd of message");
-            
-            message.ack();
-            
-            socket.disconnect();
-        });
-        
-        message.pipe(process.stdout);
+    message.once("end", function(){
+        message.ack();
+        subscription.cancel();
     });
     
-    socket.send({destination: queueName}).end("HELLO");
+    message.pipe(process.stdout);
 });
