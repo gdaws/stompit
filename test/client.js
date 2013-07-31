@@ -134,6 +134,25 @@ describe("Client", function(){
                 frame.end("efgh");
             });
         });
+        
+        it("should treat the first argument as the destination if it's a string value", function(done){
+            
+            server._send = function(frame, beforeSendResponse){
+                assert(frame.headers["destination"] === "/test");
+                var writable = new BufferWritable(new Buffer(26));
+                frame.on("end", function(){
+                    beforeSendResponse();
+                    done();
+                });
+                frame.pipe(writable);
+            };
+            
+            client.connect("localhost", function(){
+                var frame = client.send("/test");
+                frame.write("abcd");
+                frame.end("efgh");
+            });
+        });
     });
     
     describe("#destroy", function(){
