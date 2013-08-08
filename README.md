@@ -3,7 +3,7 @@ stompit
 
 [![Build Status](https://travis-ci.org/gdaws/node-stomp.png)](https://travis-ci.org/gdaws/node-stomp)
 
-A STOMP client and server library in node.js
+Stompit is a STOMP 1.2 client for node.js
 
 ---
 ### Client Class
