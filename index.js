@@ -8,8 +8,6 @@ module.exports = {
     
     Client: require("./lib/client"),
     
-    MessageBus: require("./lib/message_bus"),
-    
     Failover: require("./lib/failover"),
     Messaging: Messaging,
     
