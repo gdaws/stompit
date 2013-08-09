@@ -14,6 +14,7 @@ var startServer = function(listener){
 };
 
 describe("connect(options, [connectionListener])", function(){
+    
     it("should connect to a stomp server", function(done){
         
         var serverCallback = false;
@@ -34,6 +35,27 @@ describe("connect(options, [connectionListener])", function(){
             connectCallback = true;
             if(serverCallback && connectCallback){
                 done();
+            }
+        });
+    });
+    
+    it("should include headers defined by the caller in the CONNECT frame", function(done){
+        
+        var server = startServer(function(conn){
+            assert(conn.headers.host === "test");
+            assert(conn.headers.login === "a");
+            assert(conn.headers.passcode === "b");
+            assert(conn.headers.foo === "bar");
+            done();
+        });
+        
+        connect({
+            port: server.address().port,
+            connectHeaders:{
+                host: "test",
+                login: "a",
+                passcode: "b",
+                foo: "bar"
             }
         });
     });
