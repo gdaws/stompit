@@ -15,6 +15,7 @@ var startServer = function(listener){
 
 var startBrokenServer = function(){
     return startServer(function(stomp){
+        stomp.on("error", function(){});
         stomp.destroy(new Error("unavailable"));
     });
 };
