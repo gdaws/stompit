@@ -26,7 +26,7 @@ var argv = require("optimist")
 var util            = require("util");
 var child_process   = require("child_process");
 var stompit         = require("stompit");
-var appUtil         = require("stompit/lib/app_util").init(argv);
+var appUtil         = require("stompit/lib/util/app_cli").init(argv);
 
 var messageHandler;
 

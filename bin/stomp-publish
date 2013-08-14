@@ -23,7 +23,7 @@ var argv = require("optimist")
 var fs          = require("fs");
 var stompit     = require("stompit");
 var util        = require("stompit/lib/util");
-var appUtil     = require("stompit/lib/app_util").init(argv);
+var appUtil     = require("stompit/lib/util/app_cli").init(argv);
 
 var input = process.stdin;
 var contentLength = argv["content-length"];
