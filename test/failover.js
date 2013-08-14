@@ -7,7 +7,7 @@ var createConnector = function(name){
     return function(callback){
         var socket = new MemorySocket();
         socket.name = name;
-        process.nextTick(callback.bind(null, socket));
+        process.nextTick(callback.bind(null, null, socket));
         return socket;
     };
 };
@@ -23,12 +23,10 @@ var createBrokenConnector = function(connectAfterFailedAttempts){
         var socket = new MemorySocket();
         
         if(attempts > connectAfterFailedAttempts){
-            process.nextTick(callback.bind(null, socket));
+            process.nextTick(callback.bind(null, null, socket));
         }
         else{
-            process.nextTick(function(){
-                socket.destroy(new Error("unable to connect"));
-            });
+            process.nextTick(callback.bind(null, new Error("unable to connect")));
         }
         
         return socket;

@@ -38,7 +38,8 @@ describe("Client", function(){
                 clientConnected = true;
             });
             
-            client.connect("localhost", function(){
+            client.connect("localhost", function(error){
+                assert(!error);
                 assert(serverConnected);
                 assert(clientConnected);
                 done();

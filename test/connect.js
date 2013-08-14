@@ -30,7 +30,8 @@ describe("connect(options, [connectionListener])", function(){
         connect({
             host: "127.0.0.1",
             port: server.address().port
-        }, function(client){
+        }, function(error, client){
+            assert(!error);
             assert(client instanceof Client);
             connectCallback = true;
             if(serverCallback && connectCallback){
@@ -74,7 +75,8 @@ describe("connect(port, [host], [connectListener])", function(){
             }
         });
         
-        connect(server.address().port, function(client){
+        connect(server.address().port, function(error, client){
+            assert(!error);
             assert(client instanceof Client);
             connectCallback = true;
             if(serverCallback && connectCallback){
