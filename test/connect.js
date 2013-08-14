@@ -7,10 +7,16 @@ var assert = require("assert");
 var startServer = function(listener){
     var server = net.createServer(function(socket){
         var stomp = new Server(socket);
-        stomp.on("connection", listener);
+        listener(stomp);
     });
     server.listen(0);
     return server;
+};
+
+var startBrokenServer = function(){
+    return startServer(function(stomp){
+        stomp.destroy(new Error("unavailable"));
+    });
 };
 
 describe("connect(options, [connectionListener])", function(){
@@ -20,11 +26,13 @@ describe("connect(options, [connectionListener])", function(){
         var serverCallback = false;
         var connectCallback = false;
         
-        var server = startServer(function(){
-            serverCallback = true;
-            if(serverCallback && connectCallback){
-                done();
-            }
+        var server = startServer(function(stomp){
+            stomp.on("connection", function(){
+                serverCallback = true;
+                if(serverCallback && connectCallback){
+                    done();
+                }
+            });
         });
         
         connect({
@@ -42,12 +50,14 @@ describe("connect(options, [connectionListener])", function(){
     
     it("should include headers defined by the caller in the CONNECT frame", function(done){
         
-        var server = startServer(function(conn){
-            assert(conn.headers.host === "test");
-            assert(conn.headers.login === "a");
-            assert(conn.headers.passcode === "b");
-            assert(conn.headers.foo === "bar");
-            done();
+        var server = startServer(function(stomp){
+            stomp.on("connection", function(conn){
+                assert(conn.headers.host === "test");
+                assert(conn.headers.login === "a");
+                assert(conn.headers.passcode === "b");
+                assert(conn.headers.foo === "bar");
+                done();
+            });
         });
         
         connect({
@@ -60,6 +70,19 @@ describe("connect(options, [connectionListener])", function(){
             }
         });
     });
+    
+    it("should callback on error", function(done){
+       
+        var server = startBrokenServer();
+        
+        connect({
+            host:"127.0.0.1",
+            port: server.address().port
+        }, function(error){
+            assert(error);
+            done();
+        });
+    });
 });
 
 describe("connect(port, [host], [connectListener])", function(){
@@ -68,11 +91,13 @@ describe("connect(port, [host], [connectListener])", function(){
         var serverCallback = false;
         var connectCallback = false;
         
-        var server = startServer(function(){
-            serverCallback = true;
-            if(serverCallback && connectCallback){
-                done();
-            }
+        var server = startServer(function(stomp){
+            stomp.on("connection", function(){
+                serverCallback = true;
+                if(serverCallback && connectCallback){
+                    done();
+                }
+            });
         });
         
         connect(server.address().port, function(error, client){

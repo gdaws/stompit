@@ -45,13 +45,22 @@ describe("Client", function(){
                 done();
             });
         });
+        
+        it("should callback on error", function(done){
+            client.connect({}, function(error){
+                assert(error);
+                done();
+            });
+            server.destroy();
+        });
     });
     
     describe("#disconnect", function(){
         
         it("should disconnect", function(done){
             client.connect("localhost", function(){
-                client.disconnect(function(){
+                client.disconnect(function(error){
+                    assert(!error);
                     done();
                 });
             });
@@ -107,6 +116,16 @@ describe("Client", function(){
                 
                 client.send().end();
             });
+        });
+        
+        it("should callback on error", function(done){
+            
+            client.disconnect(function(error){
+               assert(error);
+               done(); 
+            });
+            
+            server.destroy();
         });
     });
     
