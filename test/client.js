@@ -161,7 +161,7 @@ describe('Client', function(){
             });
         });
         
-        it('should treat the first argument as the destination if it's a string value', function(done){
+        it('should treat the first argument as the destination if it\'s a string value', function(done){
             
             server._send = function(frame, beforeSendResponse){
                 assert(frame.headers['destination'] === '/test');
