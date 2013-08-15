@@ -7,7 +7,7 @@
 var MemorySocket    = require('../lib/memory_socket');
 var Client          = require('../lib/client');
 var Server          = require('../lib/server');
-var BufferWritable  = require('../lib/buffer_writable');
+var BufferWritable  = require('../lib/buffer/writable');
 var assert          = require('assert');
 
 var fail = function(){assert(false);};
@@ -219,7 +219,7 @@ describe('Client', function(){
         it('should emit an error event', function(done){
             
             client.once('error', function(exception){
-                assert(exception.message === 'Protocol error: unknown command 'FOIDSUF'');
+                assert(exception.message === 'Protocol error: unknown command \'FOIDSUF\'');
                 done();
             });
             
@@ -265,7 +265,7 @@ describe('Client', function(){
             });
         });
         
-        it('should treat the first argument as the destination if it's a string value', function(done){
+        it('should treat the first argument as the destination if it\'s a string value', function(done){
             
             server._subscribe = function(frame, beforeSendResponse){
                 done();
