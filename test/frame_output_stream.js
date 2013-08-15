@@ -1,10 +1,15 @@
+/*
+ * Test stompit.FrameOutputStream
+ * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
+ * MIT licensed
+ */
 
-var FrameOutputStream = require("../lib/frame_output_stream");
-var BufferWritable = require("../lib/buffer_writable");
-var stream = require("stream");
-var assert = require("assert");
+var FrameOutputStream   = require('../lib/frame_output_stream');
+var BufferWritable      = require('../lib/buffer_writable');
+var stream              = require('stream');
+var assert              = require('assert');
 
-describe("FrameOutputStream", function(){
+describe('FrameOutputStream', function(){
     
     var dest;
     var writable;
@@ -16,162 +21,162 @@ describe("FrameOutputStream", function(){
         output = new FrameOutputStream(writable);
     });
     
-    describe("#frame", function(){
+    describe('#frame', function(){
         
-        it("should return a stream.Writable object", function(){
-            assert(output.frame("CONNECT") instanceof stream.Writable);
+        it('should return a stream.Writable object', function(){
+            assert(output.frame('CONNECT') instanceof stream.Writable);
         });
         
-        describe("OutgoingFrame", function(){
+        describe('OutgoingFrame', function(){
             
-            describe("#end", function(){
+            describe('#end', function(){
                 
-                it("should value-encode command and headers", function(done){
+                it('should value-encode command and headers', function(done){
                     
-                    var frame = output.frame("\n:\\", {
-                        "\n:\\": "\n:\\"
+                    var frame = output.frame('\n:\\', {
+                        '\n:\\': '\n:\\'
                     });
                     
                     frame.end(function(){
-                        assert(writable.getWrittenSlice().toString() === "\\n\\c\\\\\n\\n\\c\\\\:\\n\\c\\\\\n\n\x00\n");
+                        assert(writable.getWrittenSlice().toString() === '\\n\\c\\\\\n\\n\\c\\\\:\\n\\c\\\\\n\n\x00\n');
                         done();
                     });
                 });
                 
-                it("should ignore null properties in the headers hash", function(done){
+                it('should ignore null properties in the headers hash', function(done){
                     
-                    var frame = output.frame("CONNECT", {
-                        "accepted-version": "1.1",
-                        "host": null
+                    var frame = output.frame('CONNECT', {
+                        'accepted-version': '1.1',
+                        'host': null
                     });
                     
                     frame.end(function(){
-                        assert(writable.getWrittenSlice().toString() === "CONNECT\naccepted-version:1.1\n\n\x00\n");
+                        assert(writable.getWrittenSlice().toString() === 'CONNECT\naccepted-version:1.1\n\n\x00\n');
                         done();
                     });
                 });
                 
-                it("should write empty body frame", function(done){
+                it('should write empty body frame', function(done){
                     
-                    var frame = output.frame("CONNECT", {
-                        "accepted-version": "1.1",
-                        "host": "example.com"
+                    var frame = output.frame('CONNECT', {
+                        'accepted-version': '1.1',
+                        'host': 'example.com'
                     });
                     
                     frame.end(function(error){
                         assert(!error);
-                        var expected = "CONNECT\naccepted-version:1.1\nhost:example.com\n\n\x00";
+                        var expected = 'CONNECT\naccepted-version:1.1\nhost:example.com\n\n\x00';
                         assert(dest.toString().substring(0, expected.length) === expected);
                         done();
                     });
                 });
                 
-                it("should write non-empty body frame", function(done){
+                it('should write non-empty body frame', function(done){
                    
-                   var frame = output.frame("CONNECT", {
-                        "accepted-version": "1.1",
-                        "host": "example.com"
+                   var frame = output.frame('CONNECT', {
+                        'accepted-version': '1.1',
+                        'host': 'example.com'
                     });
                     
-                    frame.end("Body", function(error){
+                    frame.end('Body', function(error){
                         assert(!error);
-                        var expected = "CONNECT\naccepted-version:1.1\nhost:example.com\n\nBody\x00\n";
+                        var expected = 'CONNECT\naccepted-version:1.1\nhost:example.com\n\nBody\x00\n';
                         assert(dest.toString().substring(0, expected.length) === expected);
                         done();
                     });
                 });
                 
-                it("should prevent any future writes", function(done){
+                it('should prevent any future writes', function(done){
                     
-                    var frame = output.frame("CONNECT", {
-                        "accepted-version": "1.1",
-                        "host": "example.com"
+                    var frame = output.frame('CONNECT', {
+                        'accepted-version': '1.1',
+                        'host': 'example.com'
                     });
                     
-                    frame.end("Body", function(error){
+                    frame.end('Body', function(error){
                         process.nextTick(function(){
                             
-                            frame.on("error", function(){
+                            frame.on('error', function(){
                                 done();
                             });
                             
-                            frame.write("More");
+                            frame.write('More');
                         });
                     });
                 });
             });
             
-            describe("#write", function(){
+            describe('#write', function(){
                 
-                it("should write header and body before #end is called", function(done){
+                it('should write header and body before #end is called', function(done){
                     
-                    var frame = output.frame("CONNECT", {
-                       "accepted-version": "1.1",
-                       "host": "example.com"
+                    var frame = output.frame('CONNECT', {
+                       'accepted-version': '1.1',
+                       'host': 'example.com'
                     });
                     
-                    frame.write("Body", function(error){
+                    frame.write('Body', function(error){
                         assert(!error);
-                        var expected = "CONNECT\naccepted-version:1.1\nhost:example.com\n\nBody";
+                        var expected = 'CONNECT\naccepted-version:1.1\nhost:example.com\n\nBody';
                         assert(dest.toString().substring(0, expected.length) === expected);
                         done();
                     });
                 });
                 
-                it("should only write the header once", function(done){
+                it('should only write the header once', function(done){
                     
-                    var frame = output.frame("CONNECT", {
-                       "accepted-version": "1.1",
-                       "host": "example.com"
+                    var frame = output.frame('CONNECT', {
+                       'accepted-version': '1.1',
+                       'host': 'example.com'
                     });
                     
-                    frame.write("Chunk1");
+                    frame.write('Chunk1');
                     
-                    frame.write("Chunk2", function(error){
+                    frame.write('Chunk2', function(error){
                         assert(!error);
-                        var expected = "CONNECT\naccepted-version:1.1\nhost:example.com\n\nChunk1Chunk2";
+                        var expected = 'CONNECT\naccepted-version:1.1\nhost:example.com\n\nChunk1Chunk2';
                         assert(dest.toString().substring(0, expected.length) === expected);
                         done();
                     });
                 });
                 
-                it("can write empty header frame", function(done){
+                it('can write empty header frame', function(done){
                     
-                    var frame = output.frame("CONNECT", {});
+                    var frame = output.frame('CONNECT', {});
                     
-                    frame.write("Body", function(error){
+                    frame.write('Body', function(error){
                         assert(!error);
-                        var expected = "CONNECT\n\nBody";
+                        var expected = 'CONNECT\n\nBody';
                         assert(dest.toString().substring(0, expected.length) === expected);
                         done();
                     });
                 });
             });
             
-            it("should write frames in order", function(done){
+            it('should write frames in order', function(done){
                 
-                var firstFrame = output.frame("CONNECT", {});
-                var secondFrame = output.frame("SEND", {});
-                var thirdFrame = output.frame("SEND", {});
+                var firstFrame = output.frame('CONNECT', {});
+                var secondFrame = output.frame('SEND', {});
+                var thirdFrame = output.frame('SEND', {});
                 
-                thirdFrame.end("third", function(error){
+                thirdFrame.end('third', function(error){
                     assert(!error);
-                    var expected = "CONNECT\n\nfirst\x00\nSEND\n\nsecond\x00\nSEND\n\nthird\x00\n";
+                    var expected = 'CONNECT\n\nfirst\x00\nSEND\n\nsecond\x00\nSEND\n\nthird\x00\n';
                     assert(dest.toString().substring(0, expected.length) === expected);
                     done();
                 });
                 
-                secondFrame.end("second");
-                firstFrame.end("first");
+                secondFrame.end('second');
+                firstFrame.end('first');
             });
         });
     });
     
-    describe("#heartbeat", function(){
-        it("should write a newline byte", function(done){
+    describe('#heartbeat', function(){
+        it('should write a newline byte', function(done){
             output.heartbeat();
             assert(writable.getBytesWritten() === 1);
-            assert(dest[0] === "\n".charCodeAt(0));
+            assert(dest[0] === '\n'.charCodeAt(0));
             done();
         });
     });

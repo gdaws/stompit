@@ -1,7 +1,13 @@
-var Failover = require("../lib/failover");
-var MemorySocket = require("../lib/memory_socket");
-var util = require("../lib/util");
-var assert = require("assert");
+/*
+ * Test stompit.Failover
+ * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
+ * MIT licensed
+ */
+
+var Failover        = require('../lib/failover');
+var MemorySocket    = require('../lib/memory_socket');
+var util            = require('../lib/util');
+var assert          = require('assert');
 
 var createConnector = function(name){
     return function(callback){
@@ -26,7 +32,7 @@ var createBrokenConnector = function(connectAfterFailedAttempts){
             process.nextTick(callback.bind(null, null, socket));
         }
         else{
-            process.nextTick(callback.bind(null, new Error("unable to connect")));
+            process.nextTick(callback.bind(null, new Error('unable to connect')));
         }
         
         return socket;
@@ -43,25 +49,25 @@ var defaultOptions = {
     randomize: true
 };
 
-describe("Failover", function(){
+describe('Failover', function(){
     
-    describe("#connect", function(){
+    describe('#connect', function(){
         
-        it("should connect to the primary server first", function(done){
+        it('should connect to the primary server first', function(done){
             
             var failover = new Failover([
-                createConnector("primary"), 
-                createConnector("secondary")
+                createConnector('primary'), 
+                createConnector('secondary')
             ], defaultOptions);
             
             failover.connect(function(error, client){
                 assert(!error);
-                assert(client.name === "primary");
+                assert(client.name === 'primary');
                 done();
             });
         });
         
-        it("should reconnect", function(done){
+        it('should reconnect', function(done){
             
             var failover = new Failover([
                 createConnector(),
@@ -81,7 +87,7 @@ describe("Failover", function(){
             });
         });
         
-        it("should reconnect to the next server", function(done){
+        it('should reconnect to the next server', function(done){
             
             var failover = new Failover([
                 createConnector(0),
@@ -106,7 +112,7 @@ describe("Failover", function(){
             });
         });
         
-        it("should stop reconnecting after 3 successful re-connects", function(done){
+        it('should stop reconnecting after 3 successful re-connects', function(done){
             
             var failover = new Failover([
                 createConnector(),
@@ -132,7 +138,7 @@ describe("Failover", function(){
             });
         });
         
-        it("should should connect after any number of failed attempts", function(done){
+        it('should should connect after any number of failed attempts', function(done){
             
             var failover = new Failover([
                 createBrokenConnector(8)
@@ -148,7 +154,7 @@ describe("Failover", function(){
             });
         });
         
-        it("should give up trying to connect after a number of failed attempts", function(done){
+        it('should give up trying to connect after a number of failed attempts', function(done){
             
             var failover = new Failover([
                 createBrokenConnector(8)

@@ -1,8 +1,14 @@
-var net = require("net");
-var connect = require("../lib/connect");
-var Client = require("../lib/client");
-var Server = require("../lib/server");
-var assert = require("assert");
+/*
+ * Test stompit.connect
+ * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
+ * MIT licensed
+ */
+
+var net         = require('net');
+var connect     = require('../lib/connect');
+var Client      = require('../lib/client');
+var Server      = require('../lib/server');
+var assert      = require('assert');
 
 var startServer = function(listener){
     var server = net.createServer(function(socket){
@@ -15,20 +21,20 @@ var startServer = function(listener){
 
 var startBrokenServer = function(){
     return startServer(function(stomp){
-        stomp.on("error", function(){});
-        stomp.destroy(new Error("unavailable"));
+        stomp.on('error', function(){});
+        stomp.destroy(new Error('unavailable'));
     });
 };
 
-describe("connect(options, [connectionListener])", function(){
+describe('connect(options, [connectionListener])', function(){
     
-    it("should connect to a stomp server", function(done){
+    it('should connect to a stomp server', function(done){
         
         var serverCallback = false;
         var connectCallback = false;
         
         var server = startServer(function(stomp){
-            stomp.on("connection", function(){
+            stomp.on('connection', function(){
                 serverCallback = true;
                 if(serverCallback && connectCallback){
                     done();
@@ -37,7 +43,7 @@ describe("connect(options, [connectionListener])", function(){
         });
         
         connect({
-            host: "127.0.0.1",
+            host: '127.0.0.1',
             port: server.address().port
         }, function(error, client){
             assert(!error);
@@ -49,14 +55,14 @@ describe("connect(options, [connectionListener])", function(){
         });
     });
     
-    it("should include headers defined by the caller in the CONNECT frame", function(done){
+    it('should include headers defined by the caller in the CONNECT frame', function(done){
         
         var server = startServer(function(stomp){
-            stomp.on("connection", function(conn){
-                assert(conn.headers.host === "test");
-                assert(conn.headers.login === "a");
-                assert(conn.headers.passcode === "b");
-                assert(conn.headers.foo === "bar");
+            stomp.on('connection', function(conn){
+                assert(conn.headers.host === 'test');
+                assert(conn.headers.login === 'a');
+                assert(conn.headers.passcode === 'b');
+                assert(conn.headers.foo === 'bar');
                 done();
             });
         });
@@ -64,20 +70,20 @@ describe("connect(options, [connectionListener])", function(){
         connect({
             port: server.address().port,
             connectHeaders:{
-                host: "test",
-                login: "a",
-                passcode: "b",
-                foo: "bar"
+                host: 'test',
+                login: 'a',
+                passcode: 'b',
+                foo: 'bar'
             }
         });
     });
     
-    it("should callback on error", function(done){
+    it('should callback on error', function(done){
        
         var server = startBrokenServer();
         
         connect({
-            host:"127.0.0.1",
+            host:'127.0.0.1',
             port: server.address().port
         }, function(error){
             assert(error);
@@ -86,14 +92,14 @@ describe("connect(options, [connectionListener])", function(){
     });
 });
 
-describe("connect(port, [host], [connectListener])", function(){
-    it("should connect to a stomp server", function(done){
+describe('connect(port, [host], [connectListener])', function(){
+    it('should connect to a stomp server', function(done){
         
         var serverCallback = false;
         var connectCallback = false;
         
         var server = startServer(function(stomp){
-            stomp.on("connection", function(){
+            stomp.on('connection', function(){
                 serverCallback = true;
                 if(serverCallback && connectCallback){
                     done();

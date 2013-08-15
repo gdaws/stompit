@@ -1,12 +1,18 @@
-var MemorySocket = require("../lib/memory_socket");
-var Client = require("../lib/client");
-var Server = require("../lib/server");
-var BufferWritable = require("../lib/buffer_writable");
-var assert = require("assert");
+/*
+ * Test stompit.Server
+ * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
+ * MIT licensed
+ */
+
+var MemorySocket    = require('../lib/memory_socket');
+var Client          = require('../lib/client');
+var Server          = require('../lib/server');
+var BufferWritable  = require('../lib/buffer_writable');
+var assert          = require('assert');
 
 var fail = function(){assert(false);};
 
-describe("Server", function(){
+describe('Server', function(){
     
     var socket, client, server;
     
@@ -23,57 +29,57 @@ describe("Server", function(){
         client = new Client(socket.getPeerSocket());
     });
     
-    describe("on receiving unknown command", function(){
+    describe('on receiving unknown command', function(){
         
-        it("should send an error frame", function(done){
+        it('should send an error frame', function(done){
             
-            client.setCommandHandler("ERROR", function(frame){
+            client.setCommandHandler('ERROR', function(frame){
                 done();
             });
             
-            client.on("error", function(){});
-            server.on("error", function(){});
+            client.on('error', function(){});
+            server.on('error', function(){});
             
-            client.sendFrame("SDLFIJ", {}).end();
+            client.sendFrame('SDLFIJ', {}).end();
         });
         
-        it("should end the transport socket", function(done){
+        it('should end the transport socket', function(done){
             
-            client.getTransportSocket().once("end", function(){
+            client.getTransportSocket().once('end', function(){
                done();
             });
             
-            client.setCommandHandler("ERROR", function(frame){});
+            client.setCommandHandler('ERROR', function(frame){});
             
-            client.on("error", function(){});
-            server.on("error", function(){});
+            client.on('error', function(){});
+            server.on('error', function(){});
             
-            client.sendFrame("SDFDS", {}).end();
+            client.sendFrame('SDFDS', {}).end();
         });
     });
     
-    describe("on receiving DISCONNECT command", function(){
+    describe('on receiving DISCONNECT command', function(){
         
-        it("should end the transport socket", function(done){
-            client.connect("localhost", function(){
-                client.getTransportSocket().once("end", function(){
+        it('should end the transport socket', function(done){
+            client.connect('localhost', function(){
+                client.getTransportSocket().once('end', function(){
                     done();
                 });
                 client.disconnect();
             });
         });
         
-        it("should emit an end event", function(done){
-            client.connect("localhost", function(){
-                server.once("end", function(){
+        it('should emit an end event', function(done){
+            client.connect('localhost', function(){
+                server.once('end', function(){
                     done();
                 });
                 client.disconnect();
             });
         });
         
-        it("should reply with a receipt", function(done){
-            client.connect("localhost", function(){
+        it('should reply with a receipt', function(done){
+            client.connect('localhost', function(){
                 client.disconnect(function(){
                     done();
                 });

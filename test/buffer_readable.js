@@ -1,19 +1,24 @@
+/*
+ * Test stompit.BufferReadable
+ * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
+ * MIT licensed
+ */
 
-var BufferReadable = require("../lib/buffer_readable");
-var stream = require("stream");
-var assert = require("assert");
+var BufferReadable  = require('../lib/buffer_readable');
+var stream          = require('stream');
+var assert          = require('assert');
 
-describe("BufferReadable", function(){
+describe('BufferReadable', function(){
     
-    it("should inherit from stream.Readable", function(){
+    it('should inherit from stream.Readable', function(){
         assert((new BufferReadable(1)) instanceof stream.Readable);
     });
     
-    it("should have zero bytes read", function(){
+    it('should have zero bytes read', function(){
         assert((new BufferReadable(new Buffer(1))).getBytesRead() === 0);
     });
     
-    it("should have uncloned buffer object", function(){
+    it('should have uncloned buffer object', function(){
         
         var buffer = new Buffer(0);
         var readable = new BufferReadable(buffer);
@@ -21,25 +26,25 @@ describe("BufferReadable", function(){
         assert(readable.getBuffer() === buffer);
     });
     
-    describe("#read", function(){
+    describe('#read', function(){
         
-        it("should read bytes", function(){
+        it('should read bytes', function(){
             
-            var buffer = new Buffer("hello");
+            var buffer = new Buffer('hello');
             var readable = new BufferReadable(buffer);
             
-            assert(readable.read(5).toString() === "hello");
+            assert(readable.read(5).toString() === 'hello');
             assert(readable.getBytesRead() === 5);
         });
         
-        it("should push EOF chunk", function(done){
+        it('should push EOF chunk', function(done){
             
-            var buffer = new Buffer("hello");
+            var buffer = new Buffer('hello');
             var readable = new BufferReadable(buffer);
             
             readable.read(5);
             
-            readable.on("end", done);
+            readable.on('end', done);
         });
     });
 });
