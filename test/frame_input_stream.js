@@ -5,8 +5,8 @@
  */
 
 var FrameInputStream    = require('../lib/frame_input_stream');
-var BufferReadable      = require('../lib/buffer_readable');
-var BufferWritable      = require('../lib/buffer_writable');
+var BufferReadable      = require('../lib/util/buffer/readable');
+var BufferWritable      = require('../lib/util/buffer/writable');
 var assert              = require('assert');
 var stream              = require('stream');
 

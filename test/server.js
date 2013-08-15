@@ -7,7 +7,7 @@
 var MemorySocket    = require('../lib/memory_socket');
 var Client          = require('../lib/client');
 var Server          = require('../lib/server');
-var BufferWritable  = require('../lib/buffer_writable');
+var BufferWritable  = require('../lib/util/buffer/writable');
 var assert          = require('assert');
 
 var fail = function(){assert(false);};

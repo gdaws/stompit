@@ -5,7 +5,7 @@
  */
 
 var FrameOutputStream   = require('../lib/frame_output_stream');
-var BufferWritable      = require('../lib/buffer_writable');
+var BufferWritable      = require('../lib/util/buffer/writable');
 var stream              = require('stream');
 var assert              = require('assert');
 
