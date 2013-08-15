@@ -5,8 +5,8 @@
  */
 
 var Failover        = require('../lib/failover');
-var MemorySocket    = require('../lib/memory_socket');
 var util            = require('../lib/util');
+var MemorySocket    = require('../lib/util/memory_socket');
 var assert          = require('assert');
 
 var createConnector = function(name){
