@@ -1,5 +1,5 @@
 
 test:
-	mocha $(find test -name "*.js")
+	mocha --recursive
 
 .PHONY: test
