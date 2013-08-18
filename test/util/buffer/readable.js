@@ -42,9 +42,11 @@ describe('BufferReadable', function(){
             var buffer = new Buffer('hello');
             var readable = new BufferReadable(buffer);
             
-            readable.read(5);
+            readable.on('end', function(){
+                done();
+            });
             
-            readable.on('end', done);
+            while(readable.read() !== null);
         });
     });
 });
