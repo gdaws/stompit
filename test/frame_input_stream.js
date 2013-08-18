@@ -7,6 +7,7 @@
 var FrameInputStream    = require('../lib/frame_input_stream');
 var BufferReadable      = require('../lib/util/buffer/readable');
 var BufferWritable      = require('../lib/util/buffer/writable');
+var BufferReadWritable  = require('../lib/util/buffer/readwritable');
 var assert              = require('assert');
 var stream              = require('stream');
 
@@ -131,7 +132,6 @@ describe('FrameInputStream', function(){
                     done();
                 });
             });
-            
         });
         
         it('should parse header line with multiple colons', function(done){
@@ -197,6 +197,46 @@ describe('FrameInputStream', function(){
                 frame.pipe(writable, {end: false});
                 frame.on('end', function(){
                     assert(frame.headers['test'] === '1');
+                    done();
+                });
+            });
+        });
+        
+        it("should read large body with low highWaterMark", function(done){
+            
+            var io = new BufferReadWritable(new Buffer(1024), {highWaterMark:1});
+            
+            var lengthRemaining = 1498995;
+            
+            io.write("MESSAGE\nContent-length:" + lengthRemaining + "\n\n");
+            
+            var writeBody = function(){
+                if(lengthRemaining > 0){
+                    do{
+                        var chunk = new Buffer(Math.min(lengthRemaining, 789));
+                        lengthRemaining -= chunk.length;
+                    }while(chunk.length > 0 && io.write(chunk) === true);
+                    
+                    if(lengthRemaining === 0){
+                        io.end("\x00");
+                    }
+                }
+            };
+            
+            io.on('drain', writeBody);
+            
+            writeBody();
+            
+            var frameInputStream = new FrameInputStream(io);
+            frameInputStream.readFrame(function(frame){
+                
+                var read = frame.read.bind(frame);
+                
+                frame.on('readable', read);
+                
+                read();
+                
+                frame.on('end', function(){
                     done();
                 });
             });
