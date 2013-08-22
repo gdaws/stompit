@@ -244,13 +244,22 @@ describe('FrameInputStream', function(){
         
         it('should parse CRLF as EOL', function(done){
             
-            var readable = new BufferReadable(new Buffer('CONNECT\r\nheader1:value1\r\n\r\n\x00'));
+            var readable = new BufferReadable(new Buffer('CONNECT\r\nheader1:value1\r\n\r\n\x00\r\n\r\nTEST\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
             frameInputStream.readFrame(function(frame){
+                
                 assert(frame.command === 'CONNECT');
                 assert(frame.headers['header1'] === 'value1');
-                done();
+                
+                frame.readEmptyBody(function(isEmpty){
+                    assert(isEmpty);
+                    frameInputStream.readFrame(function(frame){
+                        frame.readEmptyBody(function(){
+                            done(); 
+                        });
+                    });
+                });
             });
         });
         
