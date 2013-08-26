@@ -661,4 +661,24 @@ describe('Client', function(){
             });
         });
     });
+
+    it("should send and receive heart beats", function(done){
+        
+        client.setHeartbeat([2, 2]);
+        server.setHeartbeat([2, 2]);
+        
+        client.connect({}, function(){
+            
+            var socket = client.getTransportSocket();
+            
+            var bytesRead = socket.bytesRead;
+            var bytesWritten = socket.bytesWritten;
+            
+            setTimeout(function(){
+                assert(socket.bytesRead > bytesRead);
+                assert(socket.bytesWritten > bytesWritten);
+                done();
+            }, 10);
+        });
+    });
 });
