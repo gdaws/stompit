@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: client.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: client.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/*
+ * stompit.Client
+ * Copyright (c) 2013 Graham Daws &lt;graham.daws@gmail.com>
+ * MIT licensed
+ */
+
+var Socket          = require('./socket');
+var BufferWritable  = require('./util/buffer/writable');
+var util            = require('./util');
+
+var ERROR_MAX_CONTENT_LENGTH = 4096;
+
+/**
+ * STOMP client
+ * 
+ * @constructor
+ * @param {stream.Duplex} transportSocket TCP socket or another type of
+ *  Stream.Duplex object that's ready to read and write. It's acceptable to 
+ *  pass a socket object that's in connecting state.
+ * @param {Object=} options
+ * @param {Array} [options.heartbeat=[0,0]] Set the preferred heart beat 
+ *  timings, in milliseconds. The first element is the send frequency. The
+ *  class will try to ensure the send frequency is reached by sending frame 
+ *  trailer bytes if the application is not creating busy enough traffic. The 
+ *  second element is the expected receive frequency; i.e. the client expects 
+ *  to see an increase in the number of bytes received on the socket every n 
+ *  milliseconds). To understand how the client and server negotiate timings 
+ *  read {@linkcode http://stomp.github.io/stomp-specification-1.1.html#Heart-beating STOMP 1.1 spec on Heart-beating}
+ * @param {Number} [options.heartbeatDelayMargin=100] Milliseconds added to the
+ *  the heart-beat receive frequency to account for network delay.
+ */
+function Client(transportSocket, options){
+    
+    options = util.extend({
+        commandHandlers: {},
+        unknownCommand: onUnknownCommand
+    }, options);
+    
+    Socket.call(this, transportSocket, options);
+    
+    this._receipts = {};
+    this._nextReceiptId = 1;
+    
+    this._subscriptions = {};
+    this._nextSubcriptionId = 1;
+    
+    this._nextTransactionId = 1;
+        
+    this._hasDisconnectReceipt = false;
+}
+
+util.inherits(Client, Socket);
+
+Client.prototype._onInputEnd = function(){
+    if(this._hasDisconnectReceipt){
+        this.emit('end');
+        this.destroy();
+    }
+    else{
+        var errorMessage = this.hasFinishedOutput() ? 'connection ended without disconnect receipt' : 'connection ended unexpectedly';
+        this.destroy(this.createProtocolError(errorMessage));
+    }
+};
+
+Client.prototype._beforeSendResponse = function(){
+    // No interception of outgoing frame
+};
+
+/**
+ * Create frame to send to the server. This method returns a Writable stream
+ * object for sending the frame body content.
+ * 
+ * @param {String} command
+ * @param {Object} headers
+ * @param {Object} [options]
+ * @param options.onReceipt
+ * @returns {OutgoingFrame}
+ */
+Client.prototype.sendFrame = function(command, headers, options){
+    
+    if(options){
+        if(options.onReceipt){
+            var id = this._nextReceiptId++;
+            this._receipts[id] = options.onReceipt;
+            headers['receipt'] = id;
+        }
+    }
+    
+    return Socket.prototype.sendFrame.apply(this, arguments);
+};
+
+/** 
+ * Send CONNECT frame to the server.
+ * 
+ * @param {Object} headers headers sent in the CONNECT frame
+ * @param {String} [headers.host]
+ * @param {String} [headers.login]
+ * @param {String} [headers.passcode]
+ * @param {String} [headers.heart-beat] This will overwrite the heartbeat value
+ *  given to the constructor.
+ * @param {Client~connectCallback} callback called on operation completion
+ */
+Client.prototype.connect = function(headers, callback){
+    
+    if(typeof headers === 'string'){
+        headers = {'host': headers};
+    }
+    
+    headers = util.extend(headers, {
+        'accepted-version': '1.0,1.1,1.2'
+    });
+    
+    var heartbeat = this.getHeartbeat();
+    
+    if(typeof headers['heart-beat'] === "string"){
+        var match = headers['heart-beat'].match(/^(\d+) *, *(\d+)$/);
+        if(match){
+            heartbeat = [parseInt(match[1], 10), parseInt(match[1], 10)];
+            this.setHeartbeat(heartbeat);
+        }
+    }
+    
+    headers['heart-beat'] = heartbeat[0] + "," + heartbeat[1];
+    
+    this.setCommandHandlers({
+        'CONNECTED': onConnected,
+        'ERROR': onError
+    });
+    
+    if(typeof callback === 'function'){
+        
+        var self = this;
+        
+        (function(){
+            
+            var onConnected = function(client){
+                cleanup();
+                callback(null, client);
+            };
+            
+            var onError = function(error){
+                cleanup();
+                callback(error);
+            };
+            
+            var cleanup = function(){
+                self.removeListener('error', onError);
+                self.removeListener('connect', onConnected);
+            };
+            
+            self.on('error', onError);
+            self.on('connect', onConnected);
+        })();
+    }
+    
+    var frame = this.sendFrame('CONNECT', headers);
+    
+    frame.end();
+};
+
+/**
+ * Send a message to the server. This method returns a Writable stream object 
+ * for sending the frame body content.
+ * 
+ * @param {Object} headers
+ * @param {Object} [options] See {@link Client#sendFrame} options
+ * @returns {OutgoingFrame}
+ */
+Client.prototype.send = function(headers, options){
+    
+    if(typeof headers === 'string'){
+        headers = {destination: headers};
+    }
+    
+    return this.sendFrame('SEND', headers, options);
+};
+
+/**
+ * Start a transaction with the server.
+ * 
+ * @param {Object} [headers]
+ * @param {String} [headers.transaction] Set the transaction identifier. The
+ *  method generates this identifier if this property is undefined.
+ * @returns {Transaction}
+ */
+Client.prototype.begin = function(headers){
+    
+    if(typeof headers !== 'object'){
+        if(typeof headers !== 'undefined'){
+            headers = {transaction: headers};
+        }
+        else{
+            headers = {};
+        }
+    }
+    
+    if(!('transaction' in headers)){
+        headers.transaction = this._nextTransactionId++;
+    }
+    
+    var transaction = new Transaction(headers.transaction, this);
+    
+    this.sendFrame('BEGIN', headers).end();
+    
+    return transaction;
+};
+
+/**
+ * Create subscription.
+ * 
+ * @param {Object} headers
+ * @param {String} headers.destination A string value required by the server.
+ * @param {String} [headers.ack="auto"] Set the message acknowledgment mode. 
+ * @param {String} [headers.id] Set the subscription identifier. This method
+ *  generates an identifier if this property is undefined.
+ * @param {Client~onMessageCallback} onMessageCallback called each time a new
+ *  message is received.
+ * @returns {Subscription}
+ */
+Client.prototype.subscribe = function(headers, onMessageCallback){
+    
+    if(typeof headers === 'string'){
+        headers = {destination: headers};
+    }
+    
+    var id = headers['id'] !== undefined ? headers['id'] : this._nextSubcriptionId++;
+    
+    while(this._subscriptions[id] !== undefined){
+        id = this._nextSubcriptionId++;
+    }
+    
+    headers['id'] = id;
+    
+    var ack = headers['ack'];
+    
+    if(ack === undefined){
+        ack = 'auto';
+    }
+    
+    var subscription = new Subscription(id, ack, onMessageCallback, this);
+    
+    this._subscriptions[id] = subscription;
+    
+    this.sendFrame('SUBSCRIBE', headers).end();
+    
+    return subscription;
+};
+
+Client.prototype.getSubscription = function(id){
+    return this._subscriptions[id];
+};
+
+/**
+ * Perform graceful disconnect from server. This operation does not complete
+ * until all messages are acknowledged.
+ * 
+ * @param callback called on successful disconnect or called on error.
+ */
+Client.prototype.disconnect = function(callback){
+
+    var self = this;
+    
+    if(typeof callback === 'function'){
+        (function(){
+            
+            var onEnd = function(client){
+                cleanup();
+                callback(null, client);
+            };
+            
+            var onError = function(error){
+                cleanup();
+                callback(error);
+            };
+            
+            var cleanup = function(){
+                self.removeListener('end', onEnd);
+                self.removeListener('error', onError);
+            };
+            
+            self.on('end', onEnd);
+            self.on('error', onError);
+        })();
+    }
+    
+    this.sendFrame('DISCONNECT', {}, {
+        onReceipt: function(){
+            self._hasDisconnectReceipt = true;
+            self.destroy();
+        }
+    }).end(this.finishOutput.bind(this));
+};
+
+Client.prototype.readEmptyBody = function(frame, callback){
+    
+    var self = this;
+    
+    frame.readEmptyBody(function(isEmpty){
+        
+        if(isEmpty){
+            if(typeof callback === 'function'){
+                callback.call(self);
+            }
+        }
+        else{
+            self.destroy(this.createProtocolError('expected empty body frame'));
+        }
+    });
+};
+
+function onConnected(frame, beforeSendResponse){
+    
+    // If no version header is present then assume the server is running stomp 1.0 protocol
+    this.setVersion(frame.headers['version'] || '1.0');
+    
+    this.setCommandHandlers({
+        'MESSAGE': onMessage,
+        'RECEIPT': onReceipt,
+        'ERROR': onError
+    });
+    
+    var self = this;
+    
+    this.readEmptyBody(frame, function(){
+        
+        if(frame.headers['heart-beat'] !== undefined){
+            
+            var heartbeat = frame.headers['heart-beat'].split(',').map(function(x){return parseInt(x, 10);});
+            
+            if(heartbeat.length > 1 && !isNaN(heartbeat[0]) && !isNaN(heartbeat[1])){
+                this._runHeartbeat(heartbeat[0], heartbeat[1]);
+            }
+        }
+        
+        self.headers = frame.headers;
+        
+        self.emit('connect', self);
+        
+        beforeSendResponse();
+    });
+}
+
+function onError(frame){
+    
+    var message = 'received ERROR frame';
+    
+    if(frame.headers['message']){
+        message += ' with message \'' + frame.headers['message'] + '\'';
+    }
+    
+    var error = this.createApplicationError(message);
+    
+    if(frame.headers['content-type'] === 'text/plain' && frame.headers['content-length'] &lt;= ERROR_MAX_CONTENT_LENGTH){
+        
+        var content = new BufferWritable(new Buffer(ERROR_MAX_CONTENT_LENGTH));
+        
+        var self = this;
+        
+        frame.on('end', function(){
+            error.longMessage = content.getWrittenSlice().toString();
+            self.destroy(error);
+        });
+        
+        frame.pipe(content);
+    }
+    else{
+        this.destroy(error);
+    }
+}
+
+function onMessage(frame, beforeSendResponse){
+    
+    var subId = frame.headers['subscription'];
+    
+    var subscription = this._subscriptions[subId];
+    
+    if(subscription === undefined){
+        this.destroy(this.createProtocolError('invalid subscription'));
+    }
+    
+    subscription.processMessageFrame(frame);
+    
+    beforeSendResponse();
+}
+
+function onReceipt(frame, beforeSendResponse){
+    
+    var id = frame.headers['receipt-id'];
+    
+    if(id === undefined || this._receipts[id] === undefined){
+        this.destroy(this.createProtocolError('invalid receipt'));
+        return;
+    }
+    
+    this.readEmptyBody(frame, function(){
+        this._receipts[id].call(this);
+        delete this._receipts[id];
+        beforeSendResponse();
+    });
+}
+
+function onUnknownCommand(frame){
+    this.destroy(this.createProtocolError('unknown command \'' + frame.command + '\''));
+}
+
+/**
+ * Represents a subscription
+ * @class
+ */
+function Subscription(id, ack, onMessageCallback, client){
+    
+    this._id = id;
+    this._ack = ack;
+    this._onMessageCallback = onMessageCallback;
+    this._client = client;
+    this._unacknowledged = [];
+    
+    var self = this;
+    
+    function getAckHeaders(message){
+        return {
+            'subscription': id,
+            'message-id': message.headers['message-id'],
+            'transaction': message.headers['transaction']
+        };
+    }
+    
+    switch(ack){
+        
+        case 'auto':
+            
+            this._sendAck = function(){
+                self._unacknowledged = [];
+            };
+            
+            break;
+            
+        case 'client':
+            
+            this._sendAck = function(){
+                
+                var unacknowledged = self._unacknowledged;
+                
+                var length = unacknowledged.length;
+                if(length &lt; 1){
+                    return;
+                }
+                
+                var type = unacknowledged[0].ackType;
+                if(type === undefined){
+                    return;
+                }
+                
+                var end = 1;
+                for(; end &lt; length && unacknowledged[end].ackType === type; end++);
+                 
+                var lastMessage = unacknowledged[end - 1];
+                
+                unacknowledged.splice(0, end);
+                
+                client.sendFrame(type, getAckHeaders(lastMessage)).end();
+                
+                if(unacknowledged.length > 0 && unacknowledged[0].ackType !== undefined){
+                    process.nextTick(self._sendAck.bind(self));
+                }
+            };
+            
+            break;
+            
+        case 'client-individual':
+            
+            this._sendAck = function(type, message){
+                 
+                var index = self._unacknowledged.indexOf(message);
+                
+                if(index !== -1){
+                    
+                    self._unacknowledged.splice(index, 1);
+                    
+                    client.sendFrame(type, getAckHeaders(message)).end();
+                }
+            };
+            
+            break;
+        
+        default:
+            throw this.createProtocolError('unknown ack mode');
+    }
+}
+
+/**
+ * @returns {String} subscription identifier
+ */
+Subscription.prototype.getId = function(){
+    return this._id;
+};
+
+Subscription.prototype._createMessageObject = function(frame){
+    
+    function IncomingMessage(ackFunction, nackFunction){
+        this.ack = ackFunction;
+        this.nack = nackFunction;
+    }
+    
+    IncomingMessage.prototype = frame;
+    
+    var self = this;
+    
+    var createAckFunction = function(type){
+        return function(){
+            this.ackType = type;
+            self._sendAck(type, this);
+        };
+    };
+    
+    var message = new IncomingMessage(createAckFunction('ACK'), createAckFunction('NACK'));
+    
+    this._unacknowledged.push(message);
+    
+    return message;
+};
+
+/**
+ * @private
+ */
+Subscription.prototype.processMessageFrame = function(frame){
+    this._onMessageCallback.call(this, this._createMessageObject(frame));
+};
+
+/**
+ * Send unsubscribe request to the server
+ */
+Subscription.prototype.unsubscribe = function(){
+    
+    var self = this;
+    
+    var headers = {
+        'id': this._id
+    };
+    
+    this._client.sendFrame('UNSUBSCRIBE', headers, {
+        onReceipt: function(){
+            delete self._client._subscriptions[self._id];
+        }
+    }).end();
+};
+
+/**
+ * Represents a transaction
+ *
+ * @class
+ */
+function Transaction(id, client){
+    this._client = client;
+    this.id = id;
+}
+
+/**
+ * Send a message to the server.
+ *
+ * @param {Object} headers
+ * @param {Object} [options]
+ * @returns {OutgoingFrame}
+ * @see Client#send
+ */
+Transaction.prototype.send = function(){
+    var frame = this._client.send.apply(this._client, arguments);
+    frame.headers['transaction'] = this.id;
+    return frame;
+};
+
+/**
+ * Abort the transaction
+ *
+ * @param {Object} [options] see {@link Client#sendFrame} options
+ */
+Transaction.prototype.abort = function(options){
+    
+    this._client.sendFrame('ABORT', {
+        transaction: this.id
+    }, options).end();
+};
+
+/**
+ * Commit the transaction.
+ *
+ * @param {Object} [options] see {@link Client#sendFrame} options
+ */
+Transaction.prototype.commit = function(options){
+    
+    this._client.sendFrame('COMMIT', {
+        transaction: this.id
+    }, options).end();
+};
+
+module.exports = Client;
+
+/**
+    @callback Client~connectCallback
+    @param {Error} error
+    @param {Client} client
+*/
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Client.html">Client</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Transaction.html">Transaction</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Mon Aug 26 2013 22:37:04 GMT+0100 (BST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
