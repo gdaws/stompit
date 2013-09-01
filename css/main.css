@@ -1,0 +1,54 @@
+
+body { 
+    font-family:Helvetica, Arial, sans-serif;
+}
+
+h2 { font-size:1.4em; }
+
+*:last-child { margin-bottom:0; }
+
+h2.function {
+    border-top:1px solid #ddd;
+    padding-top:1em;
+}
+
+h2.function .returns {
+    display:inline-block;
+    padding-left:0.5em;
+    font-size:0.7em;
+}
+
+h2.function .returns:before{
+    content:'→ ';
+}
+
+p {
+    font-family: Georgia, FreeSerif, Times, serif;
+}
+
+.overload {
+    font-size:0.6em;
+    margin:0.25em 0;
+}
+
+.params th { 
+    font-size:0.84em;
+    opacity:0.5;
+}
+
+.params td.type, .params td.default, .default-value {
+    font-family: Consolas,Fixed,Monospace,Courier New;
+}
+
+.params .name .default-value {
+    opacity:0.9;
+    font-size:0.9em;
+    padding-left:4px;
+    float:right;
+}
+
+#side-nav{
+    position:fixed;
+    right:0;
+    top:0;
+}

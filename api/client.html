@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>stompit.Client
+    </title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/node-stomp/css/main.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+<h1>stompit.Client</h1>
+<h2 class="function">stompit.Client(transportSocket, [options])</h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">transportSocket<span class="default-value"></span></td>
+      <td class="type">stream.Duplex</td>
+      <td class="desc">
+        <p>
+          TCP socket or another type of Stream.Duplex object that's ready to 
+          read and write. It's acceptable to pass a socket object that's in 
+          connecting state.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td class="name">options<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">heartbeat<span class="default-value">[0,0]</span></td>
+              <td class="type">Array</td>
+              <td class="desc">
+                <p>
+                  Set the preferred heart beat 
+                  timings, in milliseconds. The first element is the send 
+                  frequency. The Client class will try to ensure the send frequency 
+                  is reached by sending frame trailer bytes if the application
+                  is not creating busy enough traffic. The second element is 
+                  the expected receive frequency; i.e. the client expects to 
+                  see an increase in the number of bytes received on the 
+                  socket every n milliseconds). To understand how the client 
+                  and server negotiate timings read 
+                  <a href="http://stomp.github.io/stomp-specification-1.1.html#Heart-beating"> STOMP 1.1 spec on Heart-beating</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">heartDelayMargin<span class="default-value">100</span></td>
+              <td class="type">Number</td>
+              <td class="desc">
+                <p>Milliseconds added to the the heart-beat receive frequency to account for network delay.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>STOMP client</p>
+<h2 class="function">Client.connect(headers, [callback])</h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <p>headers headers sent in the CONNECT frame</p>
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">host<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">login<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">passcode<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">heart-beat<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>This will overwrite the heartbeat value given to the constructor.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="name">callback<span class="default-value"></span></td>
+      <td class="type">Function</td>
+      <td class="desc">
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Send CONNECT frame to the server.</p>
+<h2 class="function">Client.send(headers, [options])<span class="returns">stream.Writable</span></h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+      </td>
+    </tr>
+    <tr>
+      <td class="name">options<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Send a message to the server. This method returns a Writable stream object 
+  for sending the frame body content.
+  
+</p>
+<h2 class="function">Client.sendFrame(command, headers, [options])<span class="returns">stream.Writable</span></h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">command<span class="default-value"></span></td>
+      <td class="type">String</td>
+      <td class="desc">
+      </td>
+    </tr>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+      </td>
+    </tr>
+    <tr>
+      <td class="name">options<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">onReceipt<span class="default-value"></span></td>
+              <td class="type">Function</td>
+              <td class="desc">
+                <p>Called when the receipt frame is received.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Create frame to send to the server. This method returns a Writable stream 
+  object for sending the frame body content.
+  
+</p>
+<h2 class="function">Client.subscribe(headers, onMessageCallback)<span class="returns">Subscription</span></h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">destination<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>A string value <em>required</em> by the server.</p>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">ack<span class="default-value">'auto'</span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>Set the message acknowledgment mode. </p>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">id<span class="default-value">auto generated</span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>
+                  Set the subscription identifier. This method generates an 
+                  identifier if this property is undefined.
+                  
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="name">onMessageCallback<span class="default-value"></span></td>
+      <td class="type">Function</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">error</td>
+              <td class="type">Error</td>
+              <td class="desc">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">message</td>
+              <td class="type">Message</td>
+              <td class="desc">
+                <p>See <a href="#message">Message</a> class</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Create subscription.</p>
+<h2 class="function">Client.begin([headers])<span class="returns">Transaction</span></h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">transaction<span class="default-value">auto generated</span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>
+                  Set the transaction identifier. The method generates an
+                  identifier if this property is undefined.
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h2></h2>
+<div class="function">Client.disconnect([callback])</div>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">callback<span class="default-value"></span></td>
+      <td class="type">Function</td>
+      <td class="desc">
+        <p>callback called on successful disconnect or called on error.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Perform graceful disconnect from server. This operation does not complete 
+  until all messages are acknowledged.
+  
+</p>
+<h2 class="function">Subscription.unsubscribe()</h2>
+<p>Send unsubscribe request to the server.</p>
+<h2 id="message" class="function">Message</h2>
+<p>
+  The message class extends stream.Readable
+  
+</p>
+<h2 class="function">Message.ack()</h2>
+<p>
+  Send message acknowledgment to the server. This method should be called 
+  after the <code>end</code> event is emitted and the message has been
+  processed. Even if the subscription is in auto acknowledgment mode, this
+  method or the nack method MUST be called after the message has been read.
+  
+</p>
+<h2 class="function">Message.nack()</h2>
+<p>
+  Send negative acknowledgment to the server. Use this method when the message
+  cannot be processed (i.e. an error ocurring while trying to persist the 
+  message). This method is not for signalling to the server stop sending the
+  message. If the message frame body cannot be read then the connection to 
+  the server MUST be closed using the client's destroy method.
+  
+</p>
+<h2 class="function">Transaction.send(headers, [options])<span class="returns">stream.Writable</span></h2>
+<p>Send message to the server.</p>
+<h2 class="function">Transaction.commit([options])</h2>
+<p>Commit the transaction.</p>
+<h2 class="function">Transaction.abort([options])</h2>
+<p>Abort the transaction.</p>
+      <ul id="side-nav" class="nav nav-stacked nav-pills">
+        <li><a href="/node-stomp/api/">stompit</a><a href="/node-stomp/api/#broker">stompit.broker</a><a href="/node-stomp/api/messaging.html">stompit.Messaging</a><a href="/node-stomp/api/failover.html">stompit.Failover</a><a href="/node-stomp/api/#connect">stompit.connect</a><a href="/node-stomp/api/client.html">stompit.Client</a></li>
+      </ul>
+    </div>
+  </body>
+</html>

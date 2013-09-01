@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>stompit.Messaging
+    </title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/node-stomp/css/main.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+<h1>stompit.Messaging</h1>
+<h2 class="function">stompit.Messaging([failover])</h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">failover<span class="default-value"></span></td>
+      <td class="type">stompit.Failover</td>
+      <td class="desc">
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h2 id="send" class="function">Messaging.send(headers, body, [callback])
+  <div class="overload">Messaging.send(destination, body, [callback])</div>
+</h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">destination<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>A string value required by the server</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="name">body<span class="default-value"></span></td>
+      <td class="type">String|Buffer|Function</td>
+      <td class="desc">
+        <p>
+          The content of the message. For a function argument, the function
+          must return a new <code>stream.Readable</code> object. 
+          The function may be called more than once if errors occur; each time
+          the function is called it must return a new stream object.
+          
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td class="name">callback<span class="default-value"></span></td>
+      <td class="type">Function</td>
+      <td class="desc">
+        <p>
+          Called when a broker consumes the message or called on fatal error. 
+          If the message could not be sent then an error argument is passed 
+          to the callback.
+          
+        </p>
+        <p>Callback arguments:</p>
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">error</td>
+              <td class="type">Error</td>
+              <td class="desc">
+                <p>This argument is null if the message was successfully sent.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Send a message to a broker.</p>
+<p>Usage example with a string body:</p>
+<pre>messaging.send('/queue/a', 'hello queue a', function(error){
+
+    if(error){
+        // Failed to send
+        return;
+    }
+    
+    // Message sent
+});
+</pre>
+<p>Usage example with a function providing the message body:</p>
+<pre>var sendFile = function(filename){
+    return function(){
+        return fs.createReadStream(filename);
+    };
+};
+
+messaging.send('/queue/a', sendFile('big_file.tar.gz'), function(error){
+
+    if(error){
+        // Failed to send
+        return;
+    }
+    
+    // Message sent
+});
+</pre>
+<h2 class="function">Messaging.subscribe(headers, onMessageCallback)<span class="returns">Subscription</span></h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">destination<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>A string value <em>required</em> by the server.</p>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">ack<span class="default-value">'auto'</span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>Set the message acknowledgment mode. </p>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">id<span class="default-value">auto generated</span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>
+                  Set the subscription identifier. This method generates an 
+                  identifier if this property is undefined.
+                  
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="name">onMessageCallback<span class="default-value"></span></td>
+      <td class="type">Function</td>
+      <td class="desc">
+        <p>Called when a new message is being received.</p>
+        <p>Callback arguments:</p>
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">error</td>
+              <td class="type">Error</td>
+              <td class="desc">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">message</td>
+              <td class="type">Message</td>
+              <td class="desc">
+                <p>For usage see the <a href="client.html#message"}">Message</a> class.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Subscribe with a broker to receive messages.</p>
+<h2 class="function">Subscription.cancel()</h2>
+<h2 class="function">Messaging.begin()<span class="returns">Transaction</span></h2>
+<h2 class="function">Transaction.send(headers, body)</h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">headers<span class="default-value"></span></td>
+      <td class="type">Object</td>
+      <td class="desc">
+      </td>
+    </tr>
+    <tr>
+      <td class="name">body<span class="default-value"></span></td>
+      <td class="type">String|Buffer</td>
+      <td class="desc">
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Send a message. See <a href="#send">Messaging.send</a> on usage. This 
+  method does not take a callback argument.
+  
+</p>
+<h2 class="function">Transaction.commit([callback])</h2>
+<table class="params table table-bordered table-condensed">
+  <caption></caption>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="name">callback<span class="default-value"></span></td>
+      <td class="type">Function</td>
+      <td class="desc">
+        <p>Called on successful commit or on fatal error.</p>
+        <p>Callback arguments:</p>
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">error</td>
+              <td class="type">Error</td>
+              <td class="desc">
+                <p>This argument is null if the transaction was committed.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Commit the transaction. If the commit is successful then all the sent
+  messages were consumed by broker.
+  
+</p>
+<h2 class="function">Transaction.abort()</h2>
+<p>Abort the transaction.</p>
+      <ul id="side-nav" class="nav nav-stacked nav-pills">
+        <li><a href="/node-stomp/api/">stompit</a><a href="/node-stomp/api/#broker">stompit.broker</a><a href="/node-stomp/api/messaging.html">stompit.Messaging</a><a href="/node-stomp/api/failover.html">stompit.Failover</a><a href="/node-stomp/api/#connect">stompit.connect</a><a href="/node-stomp/api/client.html">stompit.Client</a></li>
+      </ul>
+    </div>
+  </body>
+</html>
