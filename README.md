@@ -46,3 +46,6 @@ Receive messages:
 
  `npm install stompit`
 
+## Documentation
+
+* [API documentation](http://gdaws.github.io/node-stomp/api/)
