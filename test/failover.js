@@ -76,14 +76,14 @@ describe('Failover', function(){
             
             var lastClient = null;
             
-            var connection = failover.connect(function(error, client){
+            failover.connect(function(error, client, reconnect){
                 if(lastClient !== null){
                     assert(lastClient !== client);
                     done();
                     return;
                 }
                 lastClient = client;
-                connection.reconnect();
+                reconnect();
             });
         });
         
@@ -100,7 +100,7 @@ describe('Failover', function(){
             var index = 0;
             var maxIndex = 2;
             
-            var connection = failover.connect(function(error, client){
+            failover.connect(function(error, client, reconnect){
                 assert(!error);
                 assert(client.name == index);
                 index += 1;
@@ -108,7 +108,7 @@ describe('Failover', function(){
                     done();
                     return;
                 }
-                connection.reconnect();
+                reconnect();
             });
         });
         
@@ -123,7 +123,7 @@ describe('Failover', function(){
             
             var connects = 0;
             
-            var connection = failover.connect(function(error, client){
+            failover.connect(function(error, client, reconnect){
                 
                 connects += 1;
                 
@@ -134,7 +134,7 @@ describe('Failover', function(){
                 }
                 
                 assert(!error);
-                connection.reconnect(); 
+                reconnect();
             });
         });
         
