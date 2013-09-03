@@ -170,4 +170,135 @@ describe('Failover', function(){
             });
         });
     });
+    
+    describe("#_parseFailoverUri", function(){
+        
+        var failover = new Failover([], {});
+        var parse = failover._parseFailoverUri.bind(failover);
+        
+        it('should parse a simple uri', function(){
+            var ret = parse('failover:(primary,secondary)');
+            assert(typeof ret === 'object');
+            assert(ret.servers.length === 2);
+            assert(ret.servers[0] === 'primary');
+            assert(ret.servers[1] === 'secondary');
+        });
+        
+        it('should parse a server list', function(){
+            var ret = parse('primary,secondary');
+            assert(typeof ret === 'object');
+            assert(ret.servers.length === 2);
+            assert(ret.servers[0] === 'primary');
+            assert(ret.servers[1] === 'secondary');
+        });
+        
+        it('should parse query string', function(){
+            var ret = parse('failover:(primary)?var1=val1&var2=val2');
+            assert(typeof ret === 'object');
+            assert(typeof ret.options === 'object');
+            assert(ret.options.var1 === 'val1');
+            assert(ret.options.var2 === 'val2');
+        });
+        
+        it('should accept an empty query string', function(){
+            var ret = parse('failover:(primary)?');
+            assert(ret.servers.length === 1 && ret.servers[0] === 'primary');
+        });
+        
+        it('should cast values of known options', function(){
+            
+            var ret = parse('failover:(primary)?initialReconnectDelay=10&maxReconnectDelay=30000&useExponentialBackOff=true&maxReconnectAttempts=-1&maxReconnects=-1&randomize=true');
+            
+            assert(ret.options.initialReconnectDelay === 10);
+            assert(ret.options.maxReconnectDelay === 30000);
+            assert(ret.options.useExponentialBackOff === true);
+            assert(ret.options.maxReconnectAttempts === -1);
+            assert(ret.options.maxReconnects === -1);
+            assert(ret.options.randomize === true);
+            
+            assert(parse('failover:(primary)?randomize=TRUE').options.randomize === true);
+            assert(parse('failover:(primary)?randomize=1').options.randomize === true);
+            
+            assert(parse('failover:(primary)?randomize=FALSE').options.randomize === false);
+            assert(parse('failover:(primary)?randomize=0').options.randomize === false);
+        });
+        
+        it('should throw an error for invalid values of known options', function(){
+            
+            var expectParseError = function(source){
+                
+                var thrown = false;
+                
+                try{
+                    parse(source);
+                }catch(e){
+                    thrown = true;
+                }
+                
+                assert(thrown);
+            };
+            
+            expectParseError('failover:(sasf)?initialReconnectDelay=zvxvsdf');
+            expectParseError('failover:(sasf)?initialReconnectDelay=-2');
+            
+            expectParseError('failover:(sasf)?maxReconnectDelay=asdf');
+            expectParseError('failover:(sasf)?maxReconnectDelay=-34');
+            
+            expectParseError('failover:(sasf)?useExponentialBackOff=asdf');
+            expectParseError('failover:(sasf)?useExponentialBackOff=-34');
+            
+            expectParseError('failover:(sasf)?maxReconnectAttempts=asdf');
+            expectParseError('failover:(sasf)?maxReconnectAttempts=-34');
+            
+            expectParseError('failover:(sasf)?maxReconnects=asdf');
+            expectParseError('failover:(sasf)?maxReconnects=-34');
+            
+            expectParseError('failover:(sasf)?randomize=asdf');
+        });
+    });
+
+    describe('#_parseServerUri', function(){
+        
+        var failover = new Failover([], {});
+        var parse = failover._parseServerUri.bind(failover);
+        
+        it('should parse a typical uri', function(){
+            var ret = parse('tcp://localhost:61613');
+            assert(typeof ret === 'object');
+            assert(ret.host === 'localhost');
+            assert(ret.port === 61613);
+        });
+        
+        it('should parse without a scheme', function(){
+            var ret = parse('localhost:1234');
+            assert(typeof ret === 'object');
+            assert(ret.host === 'localhost');
+            assert(ret.port === 1234);
+        });
+        
+        it('should parse without a port', function(){
+            var ret = parse('localhost');
+            assert(ret.host === 'localhost');
+            assert(ret.port === void 0);
+        });
+        
+        it('should parse login and passcode', function(){
+            
+            var ret = parse('user:pass@localhost:123');
+            assert(ret.connectHeaders.login === 'user');
+            assert(ret.connectHeaders.passcode === 'pass');
+            assert(ret.host === 'localhost');
+            assert(ret.port === 123);
+            
+            ret = parse('tcp://user:pass@localhost');
+            assert(ret.connectHeaders.login === 'user');
+            assert(ret.connectHeaders.passcode === 'pass');
+            assert(ret.host === 'localhost');
+            assert(ret.port === void 0);
+        });
+        
+        it('should ignore leading and trailing whitespace', function(){
+            assert(parse('  localhost  \t').host === 'localhost');
+        });
+    });
 });

@@ -9,7 +9,7 @@ Compatible with STOMP 1.0, 1.1 and 1.2 servers.
 Send message:
 
     require('stompit')
-     .broker()
+     .broker('failover:(tcp://localhost:61613,tcp://localhsot:61614)?randomize=false')
      .send('/queue/a', 'hello queue a', function(error){
        if(!error){
          console.log('message sent');
