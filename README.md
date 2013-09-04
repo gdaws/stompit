@@ -39,6 +39,7 @@ Receive messages:
 ## Requirements
 
 * Node v0.10 or later - stompit library is dependant on node's new stream api, streams2;
+* qs (node-querystring) - parsing query strings in failover URIs;
 * Optimist - used in the utility programs bin/stomp-publish and bin/stomp-consume;
 * Mocha - used for testing.
 

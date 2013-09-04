@@ -245,7 +245,6 @@ describe('Failover', function(){
             expectParseError('failover:(sasf)?maxReconnectDelay=-34');
             
             expectParseError('failover:(sasf)?useExponentialBackOff=asdf');
-            expectParseError('failover:(sasf)?useExponentialBackOff=-34');
             
             expectParseError('failover:(sasf)?maxReconnectAttempts=asdf');
             expectParseError('failover:(sasf)?maxReconnectAttempts=-34');

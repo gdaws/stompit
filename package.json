@@ -1,7 +1,7 @@
 {
   "name": "stompit",
   "description": "STOMP client",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "keywords": [
     "stomp", "messages", "queue"
   ],
@@ -17,7 +17,8 @@
   },
   "engines" : { "node" : ">=0.10" },
   "dependencies" :{
-    "optimist": "*"
+    "optimist": "*",
+    "qs": "0.6.5"
   },
   "devDependencies":{
     "mocha" : "*"
