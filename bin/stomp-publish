@@ -1,38 +1,38 @@
 #!/usr/bin/env node
 
-var argv = require("optimist")
-    .usage("Usage: $0 [options] destination")
-    .demand(1)
-    .default("p", 61613)
-    .default("h", "127.0.0.1")
-    .default("v", false)
-    .boolean("v")
-    .alias("p", "port")
-    .alias("h", "host")
-    .alias("H", "header")
-    .alias("l", "content-length")
-    .alias("f", "file")
-    .alias("v", "verbose")
-    .alias("i", "virtual-host")
-    .alias("a", "login")
-    .describe("H", "Append header line")
-    .describe("f", "Message content")
-    .describe("a", "Login:passcode pair")
+var argv = require('optimist')
+    .usage('Usage: $0 [options] uri destination')
+    .demand(2)
+    .default('v', false)
+    .boolean('v')
+    .alias('H', 'header')
+    .alias('l', 'content-length')
+    .alias('f', 'file')
+    .alias('v', 'verbose')
+    .describe('H', 'Append header line')
+    .describe('f', 'Send content in file')
     .argv;
 
-var fs          = require("fs");
-var stompit     = require("stompit");
-var util        = require("stompit/lib/util");
-var appUtil     = require("stompit/lib/util/app_cli").init(argv);
+var fs          = require('fs');
+var stompit     = require('stompit');
+var util        = require('stompit/lib/util');
+var appUtil     = require('stompit/lib/util/app_cli').init(argv);
+
+var uri = argv._[0];
+var destination = argv._[1];
 
 var input = process.stdin;
-var contentLength = argv["content-length"];
+var contentLength = argv['content-length'];
 
 if(argv.file){
     
     var filename = argv.file;
     
-    if(contentLength === undefined){
+    if(!fs.existsSync(filename)){
+        appUtil.fatalError(util.format('File not found: %s', filename));
+    }
+    
+    if(contentLength === void 0){
         try{
             contentLength = fs.statSync(filename).size;
         }
@@ -42,44 +42,29 @@ if(argv.file){
     }
     
     input = fs.createReadStream(argv.file);
-    input.on("error", appUtil.fatalErrorEvent("File error: %s"));
+    input.on('error', appUtil.fatalErrorEvent('File error: %s'));
 }
 
-var connectHeaders = {
-    host: argv["virtual-host"] || argv.host
-};
+var failover = new stompit.Failover(uri, {
+    maxReconnectAttempts: 0
+});
 
-if(argv.login){
-    var match = argv.login.match(/^([^:]+):(.+)$/);
-    if(match){
-        connectHeaders["login"] = match[1];
-        connectHeaders["passcode"] = match[2];
+failover.connect(function(error, client, reconnect){
+    
+    if(error){
+        appUtil.fatalError(error.message);
+        return;
     }
-}
-
-var socket = stompit.connect({
-    host: argv.host,
-    port: argv.port,
-    allowHalfOpen: true,
-    connectHeaders: connectHeaders
-});
-
-socket.on("error", appUtil.fatalErrorEvent());
-
-socket.on("socket-connect", function(){
-    var transportSocket = socket.getTransportSocket();
-    appUtil.log("Connected to " + transportSocket.remoteAddress + ":" + transportSocket.remotePort);
-});
-
-socket.on("connect", function(server){
     
-    appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
+    appUtil.log(util.format('Established STOMP %s session with %s', client.headers['version'], client.headers['server'] || 'unnamed server'));
     
-    var destination = argv._[0];
+    client.on('error', function(){
+        reconnect(); 
+    });
     
     var headers = {
-        "destination": destination,
-        "content-length": contentLength
+        'destination': destination,
+        'content-length': contentLength
     };
     
     var userDefinedHeaders = {};
@@ -87,18 +72,12 @@ socket.on("connect", function(server){
         userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
     }
     
-    var message = socket.send(util.extend(userDefinedHeaders, headers));
+    var message = client.send(util.extend(userDefinedHeaders, headers));
     
-    message.once("finish", function(){
-        
-        appUtil.log(util.format("Sent message to '%s'", destination));
-        
-        socket.disconnect();
+    message.once('finish', function(){
+        appUtil.log(util.format('Sent message to \'%s\'', destination));
+        client.disconnect();
     });
     
     input.pipe(message);
-});
-
-socket.on("end", function(){
-    appUtil.log("Disconnected from server");
 });

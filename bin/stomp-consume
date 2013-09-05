@@ -1,32 +1,28 @@
 #!/usr/bin/env node
 
-var argv = require("optimist")
-    .usage("Usage: $0 [options] [command arg...]")
-    .demand("d")
-    .default("p", 61613)
-    .default("h", "localhost")
-    .default("v", false)
-    .default("k", "client-individual")
-    .boolean("v")
-    .alias("p", "port")
-    .alias("h", "host")
-    .alias("i", "virtual-host")
-    .alias("a", "login")
-    .alias("H", "header")
-    .alias("d", "destination")
-    .alias("k", "ack")
-    .alias("t", "timeout")
-    .alias("m", "max-consume")
-    .alias("v", "verbose")
-    .describe("H", "Append header line to subscription frame")
-    .describe("k", "Set subscription ack mode")
-    .describe("a", "Login:passcode pair")
+var argv = require('optimist')
+    .usage('Usage: $0 [options] uri destination [command arg...]')
+    .demand(2)
+    .default('v', false)
+    .default('k', 'client-individual')
+    .boolean('v')
+    .alias('H', 'header')
+    .alias('d', 'destination')
+    .alias('k', 'ack')
+    .alias('m', 'max-consume')
+    .alias('v', 'verbose')
+    .alias('t', 'timeout')
+    .describe('H', 'Append header line to subscription frame')
+    .describe('k', 'Set subscription ack mode')
     .argv;
 
-var util            = require("util");
-var child_process   = require("child_process");
-var stompit         = require("stompit");
-var appUtil         = require("stompit/lib/util/app_cli").init(argv);
+var util            = require('util');
+var child_process   = require('child_process');
+var stompit         = require('stompit');
+var appUtil         = require('stompit/lib/util/app_cli').init(argv);
+
+var uri = argv._[0];
+var destination = argv._[1];
 
 var messageHandler;
 
@@ -36,8 +32,8 @@ if(argv._.length > 0){
     var messageCountLimit = null;
     var messagesPending = 0;
     
-    if(argv["max-consume"]){
-        messageCountLimit = argv["max-consume"];
+    if(argv['max-consume']){
+        messageCountLimit = argv['max-consume'];
     }
     
     messageHandler = function(message){
@@ -56,19 +52,19 @@ if(argv._.length > 0){
         
         var child = child_process.spawn(argv._[0], argv._.slice(1));
         
-        child.on("error", appUtil.fatalErrorEvent("Child process error: %s"));
+        child.on('error', appUtil.fatalErrorEvent('Child process error: %s'));
         
-        child.on("exit", function(code){
+        child.on('exit', function(code){
             
             messagesPending -= 1;
             
             if(!ended || code === null || code !== 0){
-                appUtil.log("Failed to consume message");
+                appUtil.log('Failed to consume message');
                 message.nack();
             }
             else{
                 message.ack();
-                appUtil.log("Consumed message");
+                appUtil.log('Consumed message');
             }
             
             if(messagesPending === 0 && messageCountLimit !== null && messageNumber >= messageCountLimit){
@@ -77,7 +73,7 @@ if(argv._.length > 0){
             }
         });
         
-        message.on("end", function(){
+        message.on('end', function(){
             ended = true;
         });
         
@@ -103,7 +99,7 @@ else{
         
         var client = this;
         
-        message.on("end", function(){
+        message.on('end', function(){
             message.ack();
             client.disconnect();
         });
@@ -112,47 +108,37 @@ else{
     };
 }
 
-var connectHeaders = {
-    host: argv["virtual-host"] || argv.host
-};
-
-if(argv.login){
-    var match = argv.login.match(/^([^:]+):(.+)$/);
-    if(match){
-        connectHeaders["login"] = match[1];
-        connectHeaders["passcode"] = match[2];
-    }
-}
-
-var socket = stompit.connect({
-    host: argv.host,
-    port: argv.port,
-    allowHalfOpen: true,
-    connectHeaders: connectHeaders
+var failover = new stompit.Failover(uri, {
+    maxReconnectAttempts: 0
 });
 
-socket.on("error", appUtil.fatalErrorEvent());
-
-socket.on("socket-connect", function(){
-    var transportSocket = socket.getTransportSocket();
-    appUtil.log("Connected to " + transportSocket.remoteAddress + ":" + transportSocket.remotePort);
-});
-
-socket.on("connect", function(server){
+failover.connect(function(error, client, reconnect){
     
-    appUtil.log(util.format("Established STOMP %s session with %s", server.headers["version"], server.headers["server"] || "unnamed server"));
+    if(error){
+        appUtil.fatalError(error.message);
+        return;
+    }
+    
+    appUtil.log(util.format('Established STOMP %s session with %s', client.headers['version'], client.headers['server'] || 'unnamed server'));
+    
+    var timeout = null;
+    
+    client.on('error', function(){
+        if(timeout){
+            clearTimeout(timeout);
+        }
+        reconnect();
+    });
     
     var headers = {
-        "destination": argv.destination,
-        "ack": argv.ack
+        'destination': destination,
+        'ack': argv.ack
     };
     
     var userDefinedHeaders = {};
     if(argv.header){
         userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
     }
-    
-    var timeout = null;
     
     var startTimeout = function(){
         
@@ -162,22 +148,16 @@ socket.on("connect", function(server){
         
         if(argv.timeout){
             timeout = setTimeout(function(){
-                appUtil.log("Idle timeout");
-                socket.disconnect();
+                appUtil.log('Idle timeout');
+                client.disconnect();
             }, argv.timeout * 1000);
         }
     };
     
     startTimeout();
     
-    socket.subscribe(util.extend(userDefinedHeaders, headers), function(message){
-        
-        message.once("end", startTimeout);
-        
-        messageHandler.call(socket, message);
+    client.subscribe(util.extend(userDefinedHeaders, headers), function(message){
+        message.once('end', startTimeout);
+        messageHandler.call(client, message);
     });
-});
-
-socket.on("end", function(){
-    appUtil.log("Disconnected from server");
 });
