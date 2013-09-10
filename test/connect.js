@@ -90,6 +90,33 @@ describe('connect(options, [connectionListener])', function(){
             done();
         });
     });
+    
+    it('should accept a transport connect function', function(done){
+        
+        var server = startServer(function(stomp){
+            
+        });
+        
+        var calledTransportFunction = false;
+        
+        var transport = function(options, callback){
+            calledTransportFunction = true;
+            return net.connect({
+                host: options.host,
+                port: options.port 
+            }, callback);
+        };
+        
+        var client = connect({
+            host:'127.0.0.1',
+            port: server.address().port,
+            connect: transport
+        }, function(error){
+            assert(!error);
+            assert(calledTransportFunction);
+            done();
+        });
+    });
 });
 
 describe('connect(port, [host], [connectListener])', function(){
