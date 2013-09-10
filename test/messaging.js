@@ -13,14 +13,12 @@ var Server = require('../lib/server');
 var assert = require('assert');
 
 var createConnector = function(serverSocket){
-    var client = new Client(serverSocket.getPeerSocket());
-    return function(callback){
-        
-        client.connect({}, function(){
-            callback(null, client);
-        });
-        
-        return client;
+    return {
+        connect: function(options, callback){
+            var socket = serverSocket.getPeerSocket();
+            process.nextTick(callback);
+            return socket;
+        }
     };
 };
 

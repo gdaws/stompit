@@ -7,36 +7,51 @@
 var Failover        = require('../lib/failover');
 var util            = require('../lib/util');
 var MemorySocket    = require('../lib/util/memory_socket');
+var Server          = require('../lib/server');
 var assert          = require('assert');
 
-var createConnector = function(name){
-    return function(callback){
-        var socket = new MemorySocket();
-        socket.name = name;
-        process.nextTick(callback.bind(null, null, socket));
-        return socket;
+var createConnector = function(name, accept){
+    return {
+        name: name,
+        connect: function(options, callback){
+            
+            var serverSocket = new MemorySocket();
+            var server = new Server(serverSocket);
+            
+            var socket = serverSocket.getPeerSocket();
+            socket.connectOptions = options;
+            
+            var error;
+            if(accept){
+                error = accept();
+            }
+            
+            process.nextTick(function(){
+                if(error){
+                    socket.emit('error', error);
+                }
+                else{
+                    callback();
+                }
+            });
+            
+            return socket;
+        }
     };
 };
 
+var getConnectorName = function(client){
+    return client.getTransportSocket().connectOptions.name;
+}
+
 var createBrokenConnector = function(connectAfterFailedAttempts){
-    
-    var attempts = 0;
-    
-    return function(callback){
-        
-        attempts += 1;
-        
-        var socket = new MemorySocket();
-        
-        if(attempts > connectAfterFailedAttempts){
-            process.nextTick(callback.bind(null, null, socket));
+    var fails = 0;
+    return createConnector(null, function(){
+        fails += 1;
+        if(fails < connectAfterFailedAttempts){
+            return new Error('unable to connect');
         }
-        else{
-            process.nextTick(callback.bind(null, new Error('unable to connect')));
-        }
-        
-        return socket;
-    };
+    });
 };
 
 var defaultOptions = {
@@ -62,7 +77,7 @@ describe('Failover', function(){
             
             failover.connect(function(error, client){
                 assert(!error);
-                assert(client.name === 'primary');
+                assert(getConnectorName(client) === 'primary');
                 done();
             });
         });
@@ -102,7 +117,7 @@ describe('Failover', function(){
             
             failover.connect(function(error, client, reconnect){
                 assert(!error);
-                assert(client.name == index);
+                assert(getConnectorName(client) == index);
                 index += 1;
                 if(index == maxIndex){
                     done();
@@ -138,7 +153,7 @@ describe('Failover', function(){
             });
         });
         
-        it('should should connect after any number of failed attempts', function(done){
+        it('should connect after any number of failed attempts', function(done){
             
             var failover = new Failover([
                 createBrokenConnector(8)
