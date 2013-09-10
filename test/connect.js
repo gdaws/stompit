@@ -5,6 +5,9 @@
  */
 
 var net         = require('net');
+var tls         = require('tls');
+var fs          = require('fs');
+var path        = require('path');
 var connect     = require('../lib/connect');
 var Client      = require('../lib/client');
 var Server      = require('../lib/server');
@@ -12,6 +15,27 @@ var assert      = require('assert');
 
 var startServer = function(listener){
     var server = net.createServer(function(socket){
+        var stomp = new Server(socket);
+        listener(stomp);
+    });
+    server.listen(0);
+    return server;
+};
+
+var readFile = function(filename){
+    if(filename[0] !== '/'){
+        filename = path.dirname(module.filename) + path.sep + filename;
+    }
+    return fs.readFileSync(filename);
+};
+
+var startSecureServer = function(listener){
+    var server = tls.createServer({
+        ca:   [readFile('fixtures/ca.crt')],
+        cert: readFile('fixtures/server.crt'),
+        key:  readFile('fixtures/server.key'),
+        requestCert: false
+    }, function(socket){
         var stomp = new Server(socket);
         listener(stomp);
     });
@@ -115,6 +139,35 @@ describe('connect(options, [connectionListener])', function(){
             assert(!error);
             assert(calledTransportFunction);
             done();
+        });
+    });
+    
+    it('should use tls.connect when ssl option is set to true', function(done){
+        
+        var serverCallback = false;
+        var connectCallback = false;
+        
+        var server = startSecureServer(function(stomp){
+            stomp.on('connection', function(){
+                serverCallback = true;
+                if(serverCallback && connectCallback){
+                    done();
+                }
+            });
+        });
+        
+        connect({
+            host:'localhost',
+            port: server.address().port,
+            ssl: true,
+            ca: [readFile('fixtures/ca.crt')]
+        }, function(error, client){
+            assert(!error);
+            assert(client instanceof Client);
+            connectCallback = true;
+            if(serverCallback && connectCallback){
+                done();
+            }
         });
     });
 });
