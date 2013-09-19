@@ -50,7 +50,7 @@ if(argv._.length > 2){
         var messageNumber = messageCount;
         var ended = false;
         
-        var child = child_process.spawn(argv._[0], argv._.slice(1));
+        var child = child_process.spawn(argv._[2], argv._.slice(3));
         
         child.on('error', appUtil.fatalErrorEvent('Child process error: %s'));
         
