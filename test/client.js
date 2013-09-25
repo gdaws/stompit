@@ -59,6 +59,16 @@ describe('Client', function(){
             });
             server.destroy();
         });
+        
+        it('should send accept-version header', function(done){
+            
+            server.on('connection', function(server){
+                assert(server.headers['accept-version'] === '1.0,1.1,1.2');
+                done();
+            });
+                 
+            client.connect({host:'localhost'});
+        });
     });
     
     describe('#disconnect', function(){
