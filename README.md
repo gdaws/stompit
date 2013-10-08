@@ -36,7 +36,7 @@ Receive messages:
 * High-level API - automatic connection management and failover;
 * Low-level API - socket-like interface with manual connection management and error handling.
 
-## Requirements
+## Dependancies
 
 * Node v0.10 or later - stompit library is dependant on node's new stream api, streams2;
 * qs (node-querystring) - parsing query strings in failover URIs;
