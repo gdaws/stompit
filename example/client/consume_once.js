@@ -31,8 +31,6 @@ stompit.connect(connectParams, function(error, client){
         
         consuming = true;
         
-        var body = '';
-        
         var read = function(){
             var chunk;
             while(null !== (chunk = message.read())){
