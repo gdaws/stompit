@@ -263,6 +263,7 @@ describe('FrameInputStream', function(){
             });
         });
         
+        
         describe('IncomingFrame', function(){
             
             describe('#readEmptyBody', function(){
@@ -290,6 +291,34 @@ describe('FrameInputStream', function(){
                             assert(!isEmpty);
                             done();
                         });
+                    });
+                });
+            });
+            
+            describe('#read', function(){
+                
+                it('should not emit error event for a valid frame', function(done){
+                    
+                    var readable = new BufferReadable(new Buffer('CONNECT\r\n\r\nBODY\x00'));
+                    var frameInputStream = new FrameInputStream(readable);
+                    
+                    frameInputStream.readFrame(function(frame){
+                        
+                        var pumpRead = function(){
+                            frame.read();
+                        };
+                        
+                        frame.on('readable', pumpRead);
+                        
+                        frame.on('error', function(){
+                            assert(false); 
+                        });
+                        
+                        frame.on('end', function(){
+                            done(); 
+                        });
+                        
+                        pumpRead();
                     });
                 });
             });
