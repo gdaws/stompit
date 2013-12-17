@@ -21,7 +21,7 @@ describe('FrameInputStream', function(){
             
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
@@ -33,7 +33,7 @@ describe('FrameInputStream', function(){
                     assert(writable.getBytesWritten() === 4);
                     assert(buffer.slice(0, 4).toString() === 'BODY');
                     
-                    frameInputStream.readFrame(function(frame){
+                    frameInputStream.readFrame(function(error, frame){
                                 
                         var buffer = new Buffer(20);
                         var writable = new BufferWritable(buffer);
@@ -57,7 +57,7 @@ describe('FrameInputStream', function(){
             var readable = new BufferReadable(new Buffer('CONNECT\ncontent-length:4\n\n\x00\x00\x00\x00\x00CONNECT\ncontent-length:4\n\n\x00\n\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
@@ -69,7 +69,7 @@ describe('FrameInputStream', function(){
                     assert(writable.getBytesWritten() === 4);
                     assert(buffer[0] === 0 && buffer[1] === 0 && buffer[2] === 0 && buffer[3] === 0);
                     
-                    frameInputStream.readFrame(function(frame){
+                    frameInputStream.readFrame(function(error, frame){
                         
                         var buffer = new Buffer(20);
                         var writable = new BufferWritable(buffer);
@@ -93,7 +93,7 @@ describe('FrameInputStream', function(){
             var readable = new BufferReadable(new Buffer('CONNECT\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
@@ -114,7 +114,7 @@ describe('FrameInputStream', function(){
             var readable = new BufferReadable(new Buffer('CONNECT\nheader1:\\ctest\nheader2:test\\n\nheader3:\\c\\n\\\\\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
@@ -139,7 +139,7 @@ describe('FrameInputStream', function(){
             var readable = new BufferReadable(new Buffer('CONNECT\nheader1::value:::value:\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 assert(frame.headers['header1'] === ':value:::value:');
                 done();
             });
@@ -155,7 +155,7 @@ describe('FrameInputStream', function(){
                 done();
             });
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
@@ -178,7 +178,7 @@ describe('FrameInputStream', function(){
                 done();
             });
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
                 frame.pipe(writable, {end: false});
@@ -191,7 +191,7 @@ describe('FrameInputStream', function(){
             var readable = new BufferReadable(new Buffer('CONNECT\ntest:1\ntest:2\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 var buffer = new Buffer(20);
                 var writable = new BufferWritable(buffer);
                 frame.pipe(writable, {end: false});
@@ -228,7 +228,7 @@ describe('FrameInputStream', function(){
             writeBody();
             
             var frameInputStream = new FrameInputStream(io);
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 
                 var read = frame.read.bind(frame);
                 
@@ -247,14 +247,14 @@ describe('FrameInputStream', function(){
             var readable = new BufferReadable(new Buffer('CONNECT\r\nheader1:value1\r\n\r\n\x00\r\n\r\nTEST\n\n\x00'));
             var frameInputStream = new FrameInputStream(readable);
             
-            frameInputStream.readFrame(function(frame){
+            frameInputStream.readFrame(function(error, frame){
                 
                 assert(frame.command === 'CONNECT');
                 assert(frame.headers['header1'] === 'value1');
                 
                 frame.readEmptyBody(function(isEmpty){
                     assert(isEmpty);
-                    frameInputStream.readFrame(function(frame){
+                    frameInputStream.readFrame(function(error, frame){
                         frame.readEmptyBody(function(){
                             done(); 
                         });
@@ -273,7 +273,7 @@ describe('FrameInputStream', function(){
                     var readable = new BufferReadable(new Buffer('CONNECT\n\n\x00'));
                     var frameInputStream = new FrameInputStream(readable);
                     
-                    frameInputStream.readFrame(function(frame){
+                    frameInputStream.readFrame(function(error, frame){
                         frame.readEmptyBody(function(isEmpty){
                             assert(isEmpty);
                             done();
@@ -286,7 +286,7 @@ describe('FrameInputStream', function(){
                     var readable = new BufferReadable(new Buffer('CONNECT\n\nBODY\x00'));
                     var frameInputStream = new FrameInputStream(readable);
                     
-                    frameInputStream.readFrame(function(frame){
+                    frameInputStream.readFrame(function(error, frame){
                         frame.readEmptyBody(function(isEmpty){
                             assert(!isEmpty);
                             done();
@@ -302,7 +302,7 @@ describe('FrameInputStream', function(){
                     var readable = new BufferReadable(new Buffer('CONNECT\r\n\r\nBODY\x00'));
                     var frameInputStream = new FrameInputStream(readable);
                     
-                    frameInputStream.readFrame(function(frame){
+                    frameInputStream.readFrame(function(error, frame){
                         
                         var pumpRead = function(){
                             frame.read();
