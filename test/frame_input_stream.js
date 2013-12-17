@@ -322,6 +322,23 @@ describe('FrameInputStream', function(){
                     });
                 });
             });
+            
+            describe('#readString', function(){
+                
+                it('should read all data into a string', function(done){
+                    
+                    var readable = new BufferReadable(new Buffer('CONNECT\n\nBODY\x00'));
+                    var frameInputStream = new FrameInputStream(readable);
+                    
+                    frameInputStream.readFrame(function(error, frame){
+                        frame.readString('utf-8', function(error, body){
+                            assert(!error);
+                            assert(body === 'BODY');
+                            done();
+                        });
+                    });
+                });
+            });
         });
     });
 });
