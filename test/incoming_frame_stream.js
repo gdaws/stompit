@@ -314,4 +314,51 @@ describe('IncomingFrameStream', function(){
             frame.pipe(writable);
         });
     });
+    
+    it('should emit end event when the writable side of the stream ends', function(done){
+        
+        stream.on('end', function(){
+            done(); 
+        });
+        
+        stream.end();
+        stream.read();
+    });
+    
+    it('should emit end event after a frame has been written and then the stream ended', function(done){
+        
+        stream.on('end', function(){
+            done(); 
+        });
+        
+        stream.end('MESSAGE\n\nTESTING\x00');
+        
+        readFrameBody(stream, function(error, frame, body){
+            
+            assert(!error);
+            assert(body.toString() === 'TESTING');
+            
+            // Trigger the next read that causes EOF
+            readFrame(stream, function(error, frame){
+                assert(error); 
+            });
+        });
+    });
+    
+    it('should emit error event when the stream ends in the middle of parsing a frame', function(done){
+    
+        stream.on('error', function(error){
+            assert(error.message === 'unexpected end of stream');
+            done();
+        });
+        
+        stream.on('end', function(){
+           assert(false); 
+        });
+        
+        stream.write('MESSAGE\n\nTESTIN');
+        stream.end();
+        
+        readFrameBody(stream, function(){});
+    });
 });
