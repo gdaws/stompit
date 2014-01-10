@@ -6,6 +6,7 @@
  
 var IncomingFrameStream = require('../lib/incoming_frame_stream');
 var BufferWritable      = require('../lib/util/buffer/writable');
+var NullWritable        = require('../lib/util/nullwritable');
 var assert = require('assert');
 
 describe('IncomingFrameStream', function(){
@@ -16,47 +17,47 @@ describe('IncomingFrameStream', function(){
         stream = new IncomingFrameStream();
     });
     
-    describe('IncomingFrame', function(){
+    var readFrame = function(stream, callback){
         
-        var readFrame = function(stream, callback){
-            
-            var read = false;
-            
-            var onreadable = function(){
-                if(!read){
-                    var frame = stream.read();
-                    if(frame !== null){
-                        read = true;
-                        stream.removeListener('readable', onreadable);
-                        callback(null, frame);
-                        
-                    }
+        var read = false;
+        
+        var onreadable = function(){
+            if(!read){
+                var frame = stream.read();
+                if(frame !== null){
+                    read = true;
+                    stream.removeListener('readable', onreadable);
+                    callback(null, frame);
+                    
                 }
-            };
-            
-            stream.on('readable', onreadable);
-            
-            onreadable();
+            }
         };
         
-        var readFrameBody = function(stream, callback){
+        stream.on('readable', onreadable);
+        
+        onreadable();
+    };
+    
+    var readFrameBody = function(stream, callback){
+        
+        readFrame(stream, function(error, frame){
             
-            readFrame(stream, function(error, frame){
-                
-                if(error){
-                    callback(error);
-                    return;
-                }
-                
-                var writable = new BufferWritable(new Buffer(20));
-                
-                writable.on('finish', function(){
-                    callback(null, frame, writable.getWrittenSlice()); 
-                });
-                
-                frame.pipe(writable);
+            if(error){
+                callback(error);
+                return;
+            }
+            
+            var writable = new BufferWritable(new Buffer(20));
+            
+            writable.on('finish', function(){
+                callback(null, frame, writable.getWrittenSlice()); 
             });
-        };
+            
+            frame.pipe(writable);
+        });
+    };
+    
+    describe('IncomingFrame', function(){
         
         it('should read variable-length bodies', function(done){
             
@@ -273,6 +274,44 @@ describe('IncomingFrameStream', function(){
                     });
                 });
             });
+        });
+    });
+    
+    it('should respond to back-pressure in the frame body stream', function(done){
+        
+        stream = new IncomingFrameStream({
+            frameStreamOptions:{
+                highWaterMark: 1
+            }
+        });
+        
+        assert(stream.write('MESSAGE\n\n') === false);
+        // should choke the tranform stream because IncomingFrame object has been 
+        // pushed and is waiting to be read
+        
+        stream.once('drain', function(){
+            
+            assert(stream.write('1') === false);
+            // should choke the stream because the sub-stream being read has
+            // reached its high watermark
+            
+            stream.once('drain', function(){
+                stream.write('two\x00');
+            });
+        });
+        
+        readFrame(stream, function(error, frame){
+            
+            assert(frame._readableState.highWaterMark === 1);
+            
+            var writable = new NullWritable();
+            
+            writable.on('finish', function(){
+                assert(writable.bytesWritten === 4);
+                done();
+            });
+            
+            frame.pipe(writable);
         });
     });
 });
