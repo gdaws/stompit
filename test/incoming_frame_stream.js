@@ -520,4 +520,17 @@ describe('IncomingFrameStream', function(){
         });
     
     });
+    
+    it('shoud emit an error event when the maximum length length is exceeded', function(done){
+        
+        stream = new IncomingFrameStream({
+            maxLineLength:2
+        });
+        
+        stream.on('error', function(){
+            done(); 
+        });
+        
+        stream.write('MESSAGE\n\n');
+    });
 });
