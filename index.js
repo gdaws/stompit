@@ -3,7 +3,7 @@ var Messaging = require("./lib/messaging");
 
 module.exports = {
     
-    FrameInputStream: require("./lib/frame_input_stream"),
+    IncomingFrameStream: require("./lib/incoming_frame_stream"),
     FrameOutputStream: require("./lib/frame_output_stream"),
     
     Client: require("./lib/client"),
