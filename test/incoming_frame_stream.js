@@ -7,7 +7,9 @@
 var IncomingFrameStream = require('../lib/incoming_frame_stream');
 var BufferWritable      = require('../lib/util/buffer/writable');
 var NullWritable        = require('../lib/util/nullwritable');
-var assert = require('assert');
+var net                 = require('net');
+var crypto              = require('crypto');
+var assert              = require('assert');
 
 describe('IncomingFrameStream', function(){
     
@@ -55,6 +57,86 @@ describe('IncomingFrameStream', function(){
             
             frame.pipe(writable);
         });
+    };
+    
+    var writeBinaryFrame = function(writable, maxChunkSize, length, callback){
+        
+        writable.write('MESSAGE\ncontent-length:' + length + '\n\n');
+        
+        var lengthRemaining = length;
+        var md5sum = crypto.createHash('md5');
+        
+        var completed = false;
+        
+        var write = function(){
+            
+            var drained = true;
+            
+            while(lengthRemaining > 0 && drained){
+                var size = Math.min(lengthRemaining, maxChunkSize);
+                var chunk = new Buffer(size);
+                md5sum.update(chunk);
+                drained = writable.write(chunk);
+                lengthRemaining -= size;
+            }
+            
+            if(lengthRemaining === 0 && !completed){
+                writable.removeListener('drain', write);
+                completed = true;
+                writable.write('\x00');
+                callback(length, md5sum.digest('hex'));
+            }
+        };
+        
+        writable.on('drain', write);
+        
+        write();
+    };
+    
+    var createString = function(length){
+        
+        var charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        
+        var result = '';
+        
+        for(var i = 0; i < length; i++){
+            result += charset[Math.floor(Math.random() * charset.length)];
+        }
+        
+        return result;
+    };
+    
+    var writeTextFrame = function(writable, maxChunkSize, length, callback){
+        
+        writable.write('MESSAGE\n\n');
+        
+        var lengthRemaining = length;
+        var md5sum = crypto.createHash('md5');
+        var completed = false;
+        
+        var write = function(){
+            
+            var drained = true;
+            
+            while(lengthRemaining > 0 && drained){
+                var size = Math.min(lengthRemaining, maxChunkSize);
+                var chunk = createString(size);
+                md5sum.update(chunk);
+                drained = writable.write(chunk);
+                lengthRemaining -= size;
+            }
+            
+            if(lengthRemaining === 0 && !completed){
+                completed = false;
+                writable.removeListener('drain', write);
+                writable.write('\x00');
+                callback(length, md5sum.digest('hex'));
+            }
+        };
+        
+        writable.on('drain', write);
+        
+        write();
     };
     
     describe('IncomingFrame', function(){
@@ -346,7 +428,7 @@ describe('IncomingFrameStream', function(){
     });
     
     it('should emit error event when the stream ends in the middle of parsing a frame', function(done){
-    
+        
         stream.on('error', function(error){
             assert(error.message === 'unexpected end of stream');
             done();
@@ -360,5 +442,82 @@ describe('IncomingFrameStream', function(){
         stream.end();
         
         readFrameBody(stream, function(){});
+    });
+    
+    it('should read multiple large binary and text frames', function(done){
+        
+        var port = 12345;
+        
+        var sentFrames = [];
+        var receivedFrames = [];
+        
+        var server = net.createServer(function(connection){
+            
+            writeBinaryFrame(connection, 4096, 327675, function(length, hash){
+                
+                sentFrames.push([length, hash]);
+                
+                connection.write('\r\n\n\n');
+                
+                writeTextFrame(connection, 256, 1024, function(length, hash){
+                    
+                    sentFrames.push([length, hash]);
+                    
+                    writeBinaryFrame(connection, 16635, 347798, function(length, hash){
+                        
+                        sentFrames.push([length, hash]);
+                        connection.end();
+                    });
+                });
+            });
+        });
+        
+        server.listen(port);
+        
+        var read = function(callback){
+            
+            readFrame(stream, function(error, frame){
+                
+                if(error){
+                    callback(error);
+                    return;
+                };
+                
+                var writable = new NullWritable('md5');
+                
+                frame.on('end', function(){
+                    receivedFrames.push([writable.getBytesWritten(), writable.getHashDigest('hex')]);
+                    callback(null);
+                });
+                
+                frame.pipe(writable);
+            });
+        };
+        
+        var readLoop;
+        readLoop = function(){
+            read(function(error){
+                if(!error){
+                    readLoop();
+                }
+            });
+        };
+        
+        var client = net.connect(port, function(){
+            
+            client.pipe(stream);
+                    
+            stream.on('end', function(){
+                assert(sentFrames.length === receivedFrames.length);
+                for(var i = 0; i < sentFrames.length; i++){
+                    assert.equal(receivedFrames[i][0], sentFrames[i][0]);
+                    assert.equal(receivedFrames[i][1], sentFrames[i][1]);      
+                }
+                done();
+            });
+            
+            readLoop();
+        });
+    
     });
 });
