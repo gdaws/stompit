@@ -533,4 +533,17 @@ describe('IncomingFrameStream', function(){
         
         stream.write('MESSAGE\n\n');
     });
+    
+    it('should emit an error event when the maximum number of unique headers is exceeded', function(done){
+         
+        stream = new IncomingFrameStream({
+            maxHeaders: 2 
+        });
+        
+        stream.on('error', function(){
+            done(); 
+        });
+        
+        stream.write('MESSAGE\nheader1:abc\nheader2:abc\nheader3:abc\n\n');
+    });
 });
