@@ -309,7 +309,7 @@ describe('Client', function(){
             server._unsubscribe = fail;
             
             client.connect('localhost', function(){
-                var subscription = client.subscribe({destination: '/test'}, function(message){
+                var subscription = client.subscribe({destination: '/test'}, function(error, message){
                     
                     assert(message.headers['subscription'] == subscription.getId());
                     assert(message.headers['message-id'] == '1');
@@ -414,7 +414,7 @@ describe('Client', function(){
                 
                 var messages = [];
                 
-                client.subscribe({destination: '/test', ack: 'client'}, function(message){
+                client.subscribe({destination: '/test', ack: 'client'}, function(error, message){
                     
                     messages.push(message);
                     
@@ -491,7 +491,7 @@ describe('Client', function(){
             
             client.connect('localhost', function(){
                 
-                client.subscribe({destination: '/test', ack: 'client-individual'}, function(message){
+                client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message){
                     
                     var writable = new BufferWritable(new Buffer(26));
                     
