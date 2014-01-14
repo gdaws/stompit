@@ -505,7 +505,30 @@ describe('Client', function(){
         });
         
         describe('Subscription', function(){
+            
+            it('should pass error to the message listener', function(done){
+                
+                server._subscribe = function(frame, beforeSendResponse){
+                    beforeSendResponse();
+                }
+                
+                server._unsubscribe = function(frame, beforeSendResponse){
+                    beforeSendResponse();
+                };
+                
+                client.connect('localhost', function(){
+                    
+                    client.subscribe({destination: '/test'}, function(error){
+                        assert(error && error.message === 'testing');
+                        done();
+                    });
+                     
+                    client.destroy(new Error('testing'));
+                });
+            });
+            
             describe('#unsubscribe', function(){
+                
                 it('should unsubscribe at the server', function(done){
                     
                     server._subscribe = function(frame, beforeSendResponse){
@@ -522,7 +545,48 @@ describe('Client', function(){
                         subscription.unsubscribe();
                     });
                 });
+                
+                it('should not pass error to the message listener after unsubscribe', function(done){
+                    
+                    server._subscribe = function(frame, beforeSendResponse){
+                        
+                        var id = frame.headers['id'];
+                        
+                        beforeSendResponse();
+                        
+                        server.sendFrame('MESSAGE', {
+                            'subscription': id,
+                            'message-id': 1,
+                            'destination': '/test',
+                            'content-type': 'text/plain'
+                        }).end('hello');
+                    }
+                    
+                    server._unsubscribe = function(frame, beforeSendResponse){
+                        beforeSendResponse();
+                    };
+                    
+                    client.connect('localhost', function(){
+                        
+                        var subscription = client.subscribe({destination: '/test'}, function(error, message){
+                            
+                            assert(!error);
+                            assert(message);
+                            
+                            subscription.unsubscribe();
+                            
+                            process.nextTick(function(){
+                                client.destroy(new Error('testing'));
+                            });
+                        });
+                        
+                        client.on('error', function(){
+                            done();
+                        });
+                    });
+                });
             });
+            
         });
     });
     
