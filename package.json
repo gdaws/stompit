@@ -5,22 +5,24 @@
   "keywords": [
     "stomp", "messages", "queue"
   ],
-  "licenses":[
+  "licenses": [
     {
       "type": "MIT",
       "url": "https://raw.github.com/gdaws/node-stomp/master/LICENSE"
     }
   ],
-  "repository":{
+  "repository": {
     "type":"git",
     "url": "https://github.com/gdaws/node-stomp.git"
   },
-  "engines" : { "node" : ">=0.10" },
-  "dependencies" :{
-    "optimist": "*",
-    "qs": "0.6.5"
+  "engines": { 
+    "node" : ">=0.10"
   },
-  "devDependencies":{
+  "dependencies": {
+    "optimist": "~0.6.0",
+    "qs": "~0.6.5"
+  },
+  "devDependencies": {
     "mocha" : "*"
   },
   "scripts": {
