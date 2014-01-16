@@ -23,9 +23,10 @@
     "qs": "~0.6.5"
   },
   "devDependencies": {
-    "mocha" : "*"
+    "mocha" : "*",
+    "jshint": "*"
   },
   "scripts": {
-    "test": "make test"
+    "test": "mocha --recursive && jshint --exclude node_modules ."
   }
 }
