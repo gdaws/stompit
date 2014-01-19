@@ -10,10 +10,10 @@ var MemorySocket    = require('../lib/util/memory_socket');
 var Server          = require('../lib/server');
 var assert          = require('assert');
 
-var createConnector = function(name, accept){
+var createConnector = function(name, accept) {
     return {
         name: name,
-        connect: function(options, callback){
+        connect: function(options, callback) {
             
             var serverSocket = new MemorySocket();
             var server = new Server(serverSocket);
@@ -22,15 +22,15 @@ var createConnector = function(name, accept){
             socket.connectOptions = options;
             
             var error;
-            if(accept){
+            if (accept) {
                 error = accept();
             }
             
-            process.nextTick(function(){
-                if(error){
+            process.nextTick(function() {
+                if (error) {
                     socket.emit('error', error);
                 }
-                else{
+                else {
                     callback();
                 }
             });
@@ -40,15 +40,15 @@ var createConnector = function(name, accept){
     };
 };
 
-var getConnectorName = function(client){
+var getConnectorName = function(client) {
     return client.getTransportSocket().connectOptions.name;
-}
+};
 
-var createBrokenConnector = function(connectAfterFailedAttempts){
+var createBrokenConnector = function(connectAfterFailedAttempts) {
     var fails = 0;
-    return createConnector(null, function(){
+    return createConnector(null, function() {
         fails += 1;
-        if(fails < connectAfterFailedAttempts){
+        if (fails < connectAfterFailedAttempts) {
             return new Error('unable to connect');
         }
     });
@@ -64,25 +64,25 @@ var defaultOptions = {
     randomize: true
 };
 
-describe('Failover', function(){
+describe('Failover', function() {
     
-    describe('#connect', function(){
+    describe('#connect', function() {
         
-        it('should connect to the primary server first', function(done){
+        it('should connect to the primary server first', function(done) {
             
             var failover = new Failover([
                 createConnector('primary'), 
                 createConnector('secondary')
             ], defaultOptions);
             
-            failover.connect(function(error, client){
+            failover.connect(function(error, client) {
                 assert(!error);
                 assert(getConnectorName(client) === 'primary');
                 done();
             });
         });
         
-        it('should reconnect', function(done){
+        it('should reconnect', function(done) {
             
             var failover = new Failover([
                 createConnector(),
@@ -91,8 +91,8 @@ describe('Failover', function(){
             
             var lastClient = null;
             
-            failover.connect(function(error, client, reconnect){
-                if(lastClient !== null){
+            failover.connect(function(error, client, reconnect) {
+                if (lastClient !== null) {
                     assert(lastClient !== client);
                     done();
                     return;
@@ -102,7 +102,7 @@ describe('Failover', function(){
             });
         });
         
-        it('should reconnect to the next server', function(done){
+        it('should reconnect to the next server', function(done) {
             
             var failover = new Failover([
                 createConnector(0),
@@ -115,11 +115,11 @@ describe('Failover', function(){
             var index = 0;
             var maxIndex = 2;
             
-            failover.connect(function(error, client, reconnect){
+            failover.connect(function(error, client, reconnect) {
                 assert(!error);
                 assert(getConnectorName(client) == index);
                 index += 1;
-                if(index == maxIndex){
+                if (index == maxIndex) {
                     done();
                     return;
                 }
@@ -127,7 +127,7 @@ describe('Failover', function(){
             });
         });
         
-        it('should stop reconnecting after 3 successful re-connects', function(done){
+        it('should stop reconnecting after 3 successful re-connects', function(done) {
             
             var failover = new Failover([
                 createConnector(),
@@ -138,11 +138,11 @@ describe('Failover', function(){
             
             var connects = 0;
             
-            failover.connect(function(error, client, reconnect){
+            failover.connect(function(error, client, reconnect) {
                 
                 connects += 1;
                 
-                if(connects === 5){
+                if (connects === 5) {
                     assert(error);
                     done();
                     return;
@@ -153,7 +153,7 @@ describe('Failover', function(){
             });
         });
         
-        it('should connect after any number of failed attempts', function(done){
+        it('should connect after any number of failed attempts', function(done) {
             
             var failover = new Failover([
                 createBrokenConnector(8)
@@ -163,13 +163,13 @@ describe('Failover', function(){
                 useExponentialBackOff: false
             }));
             
-            failover.connect(function(error, client){
+            failover.connect(function(error, client) {
                 assert(!error);
                 done();
             });
         });
         
-        it('should give up trying to connect after a number of failed attempts', function(done){
+        it('should give up trying to connect after a number of failed attempts', function(done) {
             
             var failover = new Failover([
                 createBrokenConnector(8)
@@ -179,19 +179,19 @@ describe('Failover', function(){
                 useExponentialBackOff: false
             }));
             
-            failover.connect(function(error, client){
+            failover.connect(function(error, client) {
                 assert(error);
                 done();
             });
         });
     });
     
-    describe("#_parseFailoverUri", function(){
+    describe("#_parseFailoverUri", function() {
         
         var failover = new Failover([], {});
         var parse = failover._parseFailoverUri.bind(failover);
         
-        it('should parse a simple uri', function(){
+        it('should parse a simple uri', function() {
             var ret = parse('failover:(primary,secondary)');
             assert(typeof ret === 'object');
             assert(ret.servers.length === 2);
@@ -199,7 +199,7 @@ describe('Failover', function(){
             assert(ret.servers[1] === 'secondary');
         });
         
-        it('should parse a server list', function(){
+        it('should parse a server list', function() {
             var ret = parse('primary,secondary');
             assert(typeof ret === 'object');
             assert(ret.servers.length === 2);
@@ -207,7 +207,7 @@ describe('Failover', function(){
             assert(ret.servers[1] === 'secondary');
         });
         
-        it('should parse query string', function(){
+        it('should parse query string', function() {
             var ret = parse('failover:(primary)?var1=val1&var2=val2');
             assert(typeof ret === 'object');
             assert(typeof ret.options === 'object');
@@ -215,12 +215,12 @@ describe('Failover', function(){
             assert(ret.options.var2 === 'val2');
         });
         
-        it('should accept an empty query string', function(){
+        it('should accept an empty query string', function() {
             var ret = parse('failover:(primary)?');
             assert(ret.servers.length === 1 && ret.servers[0] === 'primary');
         });
         
-        it('should cast values of known options', function(){
+        it('should cast values of known options', function() {
             
             var ret = parse('failover:(primary)?initialReconnectDelay=10&maxReconnectDelay=30000&useExponentialBackOff=true&maxReconnectAttempts=-1&maxReconnects=-1&randomize=true');
             
@@ -238,15 +238,15 @@ describe('Failover', function(){
             assert(parse('failover:(primary)?randomize=0').options.randomize === false);
         });
         
-        it('should throw an error for invalid values of known options', function(){
+        it('should throw an error for invalid values of known options', function() {
             
-            var expectParseError = function(source){
+            var expectParseError = function(source) {
                 
                 var thrown = false;
                 
                 try{
                     parse(source);
-                }catch(e){
+                }catch(e) {
                     thrown = true;
                 }
                 
@@ -271,32 +271,32 @@ describe('Failover', function(){
         });
     });
 
-    describe('#_parseServerUri', function(){
+    describe('#_parseServerUri', function() {
         
         var failover = new Failover([], {});
         var parse = failover._parseServerUri.bind(failover);
         
-        it('should parse a typical uri', function(){
+        it('should parse a typical uri', function() {
             var ret = parse('tcp://localhost:61613');
             assert(typeof ret === 'object');
             assert(ret.host === 'localhost');
             assert(ret.port === 61613);
         });
         
-        it('should parse without a scheme', function(){
+        it('should parse without a scheme', function() {
             var ret = parse('localhost:1234');
             assert(typeof ret === 'object');
             assert(ret.host === 'localhost');
             assert(ret.port === 1234);
         });
         
-        it('should parse without a port', function(){
+        it('should parse without a port', function() {
             var ret = parse('localhost');
             assert(ret.host === 'localhost');
             assert(ret.port === void 0);
         });
         
-        it('should parse login and passcode', function(){
+        it('should parse login and passcode', function() {
             
             var ret = parse('user:pass@localhost:123');
             assert(ret.connectHeaders.login === 'user');
@@ -311,7 +311,7 @@ describe('Failover', function(){
             assert(ret.port === void 0);
         });
         
-        it('should ignore leading and trailing whitespace', function(){
+        it('should ignore leading and trailing whitespace', function() {
             assert(parse('  localhost  \t').host === 'localhost');
         });
     });

@@ -11,22 +11,22 @@ var net                 = require('net');
 var crypto              = require('crypto');
 var assert              = require('assert');
 
-describe('IncomingFrameStream', function(){
+describe('IncomingFrameStream', function() {
     
     var stream;
     
-    beforeEach(function(){
+    beforeEach(function() {
         stream = new IncomingFrameStream();
     });
     
-    var readFrame = function(stream, callback){
+    var readFrame = function(stream, callback) {
         
         var read = false;
         
-        var onreadable = function(){
-            if(!read){
+        var onreadable = function() {
+            if (!read) {
                 var frame = stream.read();
-                if(frame !== null){
+                if (frame !== null) {
                     read = true;
                     stream.removeListener('readable', onreadable);
                     callback(null, frame);
@@ -40,18 +40,18 @@ describe('IncomingFrameStream', function(){
         onreadable();
     };
     
-    var readFrameBody = function(stream, callback){
+    var readFrameBody = function(stream, callback) {
         
-        readFrame(stream, function(error, frame){
+        readFrame(stream, function(error, frame) {
             
-            if(error){
+            if (error) {
                 callback(error);
                 return;
             }
             
             var writable = new BufferWritable(new Buffer(20));
             
-            writable.on('finish', function(){
+            writable.on('finish', function() {
                 callback(null, frame, writable.getWrittenSlice()); 
             });
             
@@ -59,7 +59,7 @@ describe('IncomingFrameStream', function(){
         });
     };
     
-    var writeBinaryFrame = function(writable, maxChunkSize, length, callback){
+    var writeBinaryFrame = function(writable, maxChunkSize, length, callback) {
         
         writable.write('MESSAGE\ncontent-length:' + length + '\n\n');
         
@@ -68,11 +68,11 @@ describe('IncomingFrameStream', function(){
         
         var completed = false;
         
-        var write = function(){
+        var write = function() {
             
             var drained = true;
             
-            while(lengthRemaining > 0 && drained){
+            while(lengthRemaining > 0 && drained) {
                 var size = Math.min(lengthRemaining, maxChunkSize);
                 var chunk = new Buffer(size);
                 md5sum.update(chunk);
@@ -80,7 +80,7 @@ describe('IncomingFrameStream', function(){
                 lengthRemaining -= size;
             }
             
-            if(lengthRemaining === 0 && !completed){
+            if (lengthRemaining === 0 && !completed) {
                 writable.removeListener('drain', write);
                 completed = true;
                 writable.write('\x00');
@@ -93,20 +93,20 @@ describe('IncomingFrameStream', function(){
         write();
     };
     
-    var createString = function(length){
+    var createString = function(length) {
         
         var charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         
         var result = '';
         
-        for(var i = 0; i < length; i++){
+        for (var i = 0; i < length; i++) {
             result += charset[Math.floor(Math.random() * charset.length)];
         }
         
         return result;
     };
     
-    var writeTextFrame = function(writable, maxChunkSize, length, callback){
+    var writeTextFrame = function(writable, maxChunkSize, length, callback) {
         
         writable.write('MESSAGE\n\n');
         
@@ -114,11 +114,11 @@ describe('IncomingFrameStream', function(){
         var md5sum = crypto.createHash('md5');
         var completed = false;
         
-        var write = function(){
+        var write = function() {
             
             var drained = true;
             
-            while(lengthRemaining > 0 && drained){
+            while(lengthRemaining > 0 && drained) {
                 var size = Math.min(lengthRemaining, maxChunkSize);
                 var chunk = createString(size);
                 md5sum.update(chunk);
@@ -126,7 +126,7 @@ describe('IncomingFrameStream', function(){
                 lengthRemaining -= size;
             }
             
-            if(lengthRemaining === 0 && !completed){
+            if (lengthRemaining === 0 && !completed) {
                 completed = false;
                 writable.removeListener('drain', write);
                 writable.write('\x00');
@@ -139,20 +139,20 @@ describe('IncomingFrameStream', function(){
         write();
     };
     
-    describe('IncomingFrame', function(){
+    describe('IncomingFrame', function() {
         
-        it('should read variable-length bodies', function(done){
+        it('should read variable-length bodies', function(done) {
             
             stream.write('CONNECT\n\nONE\x00\n\nCONNECT\n\nTWO\x00');
             
-            readFrameBody(stream, function(error, frame, body){
+            readFrameBody(stream, function(error, frame, body) {
                 
                 assert(!error);
                 
                 assert(body.length === 3);
                 assert(body.toString() === 'ONE');
                 
-                readFrameBody(stream, function(error, frame, body){
+                readFrameBody(stream, function(error, frame, body) {
                     
                     assert(!error);
                     assert(body.length === 3);
@@ -163,17 +163,17 @@ describe('IncomingFrameStream', function(){
             });
         });
         
-        it('should read fixed-length bodies', function(done){
+        it('should read fixed-length bodies', function(done) {
             
             stream.write('CONNECT\ncontent-length:4\n\n\x00\x00\x00\x00\x00CONNECT\ncontent-length:3\n\n\x00\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
+            readFrameBody(stream, function(error, frame, body) {
                 
                 assert(!error);
                 assert(frame.headers['content-length'] === 4);
                 assert(body[0] === 0 && body[1] === 0 && body[2] === 0 && body[3] === 0);
                 
-                readFrameBody(stream, function(error, frame, body){
+                readFrameBody(stream, function(error, frame, body) {
                     
                     assert(!error);
                     assert(frame.headers['content-length'] === 3);
@@ -184,28 +184,28 @@ describe('IncomingFrameStream', function(){
             });
         });
         
-        it('should read empty frame', function(done){
+        it('should read empty frame', function(done) {
             
             stream.write('CONNECT\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
+            readFrameBody(stream, function(error, frame, body) {
                 assert(!error);
-                assert(body.length == 0);
+                assert(body.length === 0);
                 done();
             });
         });
         
-        it('should decode v1.1 escaped characters', function(done){
+        it('should decode v1.1 escaped characters', function(done) {
             
             stream.setVersion('1.1');
             
             stream.write('CONNECT\nheader1:\\ctest\nheader2:test\\n\nheader3:\\c\\n\\\\\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
+            readFrameBody(stream, function(error, frame, body) {
                 
-                assert(frame.headers['header1'] === ':test');
-                assert(frame.headers['header2'] === 'test\n');
-                assert(frame.headers['header3'] === ':\n\\');
+                assert(frame.headers.header1 === ':test');
+                assert(frame.headers.header2 === 'test\n');
+                assert(frame.headers.header3 === ':\n\\');
                 
                 assert(body.length === 0);
                 
@@ -213,47 +213,47 @@ describe('IncomingFrameStream', function(){
             });
         });
         
-        it('should decode v1.2 escaped characters', function(done){
+        it('should decode v1.2 escaped characters', function(done) {
             
             stream.setVersion('1.2');
             
             stream.write('CONNECT\nheader1:\\r\\n\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
-                assert(frame.headers['header1'] === '\r\n');
+            readFrameBody(stream, function(error, frame, body) {
+                assert(frame.headers.header1 === '\r\n');
                 done();
             });
         });
         
-        it('should not decode any escape characters in version 1.0', function(done){
+        it('should not decode any escape characters in version 1.0', function(done) {
            
             stream.setVersion('1.0');
             
             stream.write('CONNECT\nheader1:\\ctest\\n:\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
-                assert(frame.headers['header1'] === '\\ctest\\n:');
+            readFrameBody(stream, function(error, frame, body) {
+                assert(frame.headers.header1 === '\\ctest\\n:');
                 done();
             });
         });
         
-        it('should parse header line with multiple colons', function(done){
+        it('should parse header line with multiple colons', function(done) {
             
             stream.write('CONNECT\nheader1::value:::value:\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
-                assert(frame.headers['header1'] === ':value:::value:');
+            readFrameBody(stream, function(error, frame, body) {
+                assert(frame.headers.header1 === ':value:::value:');
                 done(); 
             });
         });
         
-        it('should emit an error for an undefined escape sequence', function(done){
+        it('should emit an error for an undefined escape sequence', function(done) {
             
             stream.setVersion('1.1');
             
             var processedStreamError = false;
             
-            stream.on('error', function(error){
+            stream.on('error', function(error) {
                 assert(error);
                 processedStreamError = true;
                 done();
@@ -261,35 +261,34 @@ describe('IncomingFrameStream', function(){
             
             stream.write('CONNECT\nheader:\\rtest\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
+            readFrameBody(stream, function(error, frame, body) {
                 assert(error);
             });
         });
         
-        it('should use the first occuring entry of a repeated header', function(done){
+        it('should use the first occuring entry of a repeated header', function(done) {
             
             stream.write('CONNECT\ntest:1\ntest:2\n\n\x00');
             
-            readFrameBody(stream, function(error, frame, body){
-                assert(frame.headers['test'] === '1');
+            readFrameBody(stream, function(error, frame, body) {
+                assert(frame.headers.test === '1');
                 done();
             });
         });
         
-        
-        it('should parse CRLF as EOL', function(done){
+        it('should parse CRLF as EOL', function(done) {
             
             stream.write('CONNECT\r\nheader1:value1\r\n\r\n\x00\r\n\r\nTEST\n\n\x00');
             
-            readFrame(stream, function(error, frame){
+            readFrame(stream, function(error, frame) {
                 
                 assert(frame.command === 'CONNECT');
-                assert(frame.headers['header1'] === 'value1');
+                assert(frame.headers.header1 === 'value1');
                 
-                frame.readEmptyBody(function(isEmpty){
+                frame.readEmptyBody(function(isEmpty) {
                     assert(isEmpty);
-                    readFrame(stream, function(error, frame){
-                        frame.readEmptyBody(function(isEmpty){
+                    readFrame(stream, function(error, frame) {
+                        frame.readEmptyBody(function(isEmpty) {
                             assert(isEmpty);
                             done(); 
                         });
@@ -299,26 +298,26 @@ describe('IncomingFrameStream', function(){
             });
         });
         
-        describe('#readEmptyBody', function(){
+        describe('#readEmptyBody', function() {
             
-            it('should read an empty body', function(done){
+            it('should read an empty body', function(done) {
                 
                 stream.write('CONNECT\n\n\x00');
                 
-                readFrame(stream, function(error, frame){
-                    frame.readEmptyBody(function(isEmpty){
+                readFrame(stream, function(error, frame) {
+                    frame.readEmptyBody(function(isEmpty) {
                         assert(isEmpty);
                         done();
                     });
                 });
             });
             
-            it('should not read a non-empty body', function(done){
+            it('should not read a non-empty body', function(done) {
                 
                 stream.write('CONNECT\n\nBODY\x00');
                 
-                readFrame(stream, function(error, frame){
-                    frame.readEmptyBody(function(isEmpty){
+                readFrame(stream, function(error, frame) {
+                    frame.readEmptyBody(function(isEmpty) {
                         assert(!isEmpty);
                         done();
                     });
@@ -326,30 +325,30 @@ describe('IncomingFrameStream', function(){
             });
         });
         
-        describe('#read', function(){
+        describe('#read', function() {
             
-            it('should not emit error event for a valid frame', function(done){
+            it('should not emit error event for a valid frame', function(done) {
                 
-                stream.on('error', function(){
+                stream.on('error', function() {
                     assert(false); 
                 });
                 
                 stream.write('CONNECT\r\n\r\nBODY\x00');
                 
-                readFrameBody(stream, function(error, frame, body){
+                readFrameBody(stream, function(error, frame, body) {
                     done();
                 });
             });
         });
         
-        describe('#readString', function(){
+        describe('#readString', function() {
             
-            it('should read all data into a string', function(done){
+            it('should read all data into a string', function(done) {
                 
                 stream.write('CONNECT\n\nBODY\x00');
                 
-                readFrame(stream, function(error, frame){
-                    frame.readString('utf-8', function(error, body){
+                readFrame(stream, function(error, frame) {
+                    frame.readString('utf-8', function(error, body) {
                         assert(!error);
                         assert(body === 'BODY');
                         done();
@@ -359,7 +358,7 @@ describe('IncomingFrameStream', function(){
         });
     });
     
-    it('should respond to back-pressure in the frame body stream', function(done){
+    it('should respond to back-pressure in the frame body stream', function(done) {
         
         stream = new IncomingFrameStream({
             frameStreamOptions:{
@@ -371,24 +370,24 @@ describe('IncomingFrameStream', function(){
         // should choke the tranform stream because IncomingFrame object has been 
         // pushed and is waiting to be read
         
-        stream.once('drain', function(){
+        stream.once('drain', function() {
             
             assert(stream.write('1') === false);
             // should choke the stream because the sub-stream being read has
             // reached its high watermark
             
-            stream.once('drain', function(){
+            stream.once('drain', function() {
                 stream.write('two\x00');
             });
         });
         
-        readFrame(stream, function(error, frame){
+        readFrame(stream, function(error, frame) {
             
             assert(frame._readableState.highWaterMark === 1);
             
             var writable = new NullWritable();
             
-            writable.on('finish', function(){
+            writable.on('finish', function() {
                 assert(writable.bytesWritten === 4);
                 done();
             });
@@ -397,9 +396,9 @@ describe('IncomingFrameStream', function(){
         });
     });
     
-    it('should emit end event when the writable side of the stream ends', function(done){
+    it('should emit end event when the writable side of the stream ends', function(done) {
         
-        stream.on('end', function(){
+        stream.on('end', function() {
             done(); 
         });
         
@@ -407,63 +406,63 @@ describe('IncomingFrameStream', function(){
         stream.read();
     });
     
-    it('should emit end event after a frame has been written and then the stream ended', function(done){
+    it('should emit end event after a frame has been written and then the stream ended', function(done) {
         
-        stream.on('end', function(){
+        stream.on('end', function() {
             done(); 
         });
         
         stream.end('MESSAGE\n\nTESTING\x00');
         
-        readFrameBody(stream, function(error, frame, body){
+        readFrameBody(stream, function(error, frame, body) {
             
             assert(!error);
             assert(body.toString() === 'TESTING');
             
             // Trigger the next read that causes EOF
-            readFrame(stream, function(error, frame){
+            readFrame(stream, function(error, frame) {
                 assert(error); 
             });
         });
     });
     
-    it('should emit error event when the stream ends in the middle of parsing a frame', function(done){
+    it('should emit error event when the stream ends in the middle of parsing a frame', function(done) {
         
-        stream.on('error', function(error){
+        stream.on('error', function(error) {
             assert(error.message === 'unexpected end of stream');
             done();
         });
         
-        stream.on('end', function(){
+        stream.on('end', function() {
            assert(false); 
         });
         
         stream.write('MESSAGE\n\nTESTIN');
         stream.end();
         
-        readFrameBody(stream, function(){});
+        readFrameBody(stream, function() {});
     });
     
-    it('should read multiple large binary and text frames', function(done){
+    it('should read multiple large binary and text frames', function(done) {
         
         var port = 12345;
         
         var sentFrames = [];
         var receivedFrames = [];
         
-        var server = net.createServer(function(connection){
+        var server = net.createServer(function(connection) {
             
-            writeBinaryFrame(connection, 4096, 327675, function(length, hash){
+            writeBinaryFrame(connection, 4096, 327675, function(length, hash) {
                 
                 sentFrames.push([length, hash]);
                 
                 connection.write('\r\n\n\n');
                 
-                writeTextFrame(connection, 256, 1024, function(length, hash){
+                writeTextFrame(connection, 256, 1024, function(length, hash) {
                     
                     sentFrames.push([length, hash]);
                     
-                    writeBinaryFrame(connection, 16635, 347798, function(length, hash){
+                    writeBinaryFrame(connection, 16635, 347798, function(length, hash) {
                         
                         sentFrames.push([length, hash]);
                         connection.end();
@@ -474,18 +473,18 @@ describe('IncomingFrameStream', function(){
         
         server.listen(port);
         
-        var read = function(callback){
+        var read = function(callback) {
             
-            readFrame(stream, function(error, frame){
+            readFrame(stream, function(error, frame) {
                 
-                if(error){
+                if (error) {
                     callback(error);
                     return;
-                };
+                }
                 
                 var writable = new NullWritable('md5');
                 
-                frame.on('end', function(){
+                frame.on('end', function() {
                     receivedFrames.push([writable.getBytesWritten(), writable.getHashDigest('hex')]);
                     callback(null);
                 });
@@ -495,21 +494,21 @@ describe('IncomingFrameStream', function(){
         };
         
         var readLoop;
-        readLoop = function(){
-            read(function(error){
-                if(!error){
+        readLoop = function() {
+            read(function(error) {
+                if (!error) {
                     readLoop();
                 }
             });
         };
         
-        var client = net.connect(port, function(){
+        var client = net.connect(port, function() {
             
             client.pipe(stream);
                     
-            stream.on('end', function(){
+            stream.on('end', function() {
                 assert(sentFrames.length === receivedFrames.length);
-                for(var i = 0; i < sentFrames.length; i++){
+                for (var i = 0; i < sentFrames.length; i++) {
                     assert.equal(receivedFrames[i][0], sentFrames[i][0]);
                     assert.equal(receivedFrames[i][1], sentFrames[i][1]);      
                 }
@@ -521,26 +520,26 @@ describe('IncomingFrameStream', function(){
     
     });
     
-    it('shoud emit an error event when the maximum length length is exceeded', function(done){
+    it('shoud emit an error event when the maximum length length is exceeded', function(done) {
         
         stream = new IncomingFrameStream({
             maxLineLength:2
         });
         
-        stream.on('error', function(){
+        stream.on('error', function() {
             done(); 
         });
         
         stream.write('MESSAGE\n\n');
     });
     
-    it('should emit an error event when the maximum number of unique headers is exceeded', function(done){
+    it('should emit an error event when the maximum number of unique headers is exceeded', function(done) {
          
         stream = new IncomingFrameStream({
             maxHeaders: 2 
         });
         
-        stream.on('error', function(){
+        stream.on('error', function() {
             done(); 
         });
         

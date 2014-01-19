@@ -10,41 +10,41 @@ var MemorySocket    = require('../lib/util/memory_socket');
 var BufferWritable  = require('../lib/util/buffer/writable');
 var assert          = require('assert');
 
-var fail = function(){assert(false);};
+var fail = function() {assert(false);};
 
-describe('Client', function(){
+describe('Client', function() {
     
     var socket, client, server;
     
-    beforeEach(function(){
+    beforeEach(function() {
         
         socket = new MemorySocket();
         
         server = new Server(socket);
         
-        server._disconnect = function(frame, beforeSendResponse){
+        server._disconnect = function(frame, beforeSendResponse) {
             beforeSendResponse(null);
         };
         
         client = new Client(socket.getPeerSocket());
     });
     
-    describe('#connect', function(){
+    describe('#connect', function() {
         
-        it('should establish connection', function(done){
+        it('should establish connection', function(done) {
             
             var serverConnected = false;
             var clientConnected = false;
             
-            server.on('connection', function(){
+            server.on('connection', function() {
                 serverConnected = true;
             });
             
-            client.on('connect', function(){
+            client.on('connect', function() {
                 clientConnected = true;
             });
             
-            client.connect('localhost', function(error){
+            client.connect('localhost', function(error) {
                 assert(!error);
                 assert(serverConnected);
                 assert(clientConnected);
@@ -52,17 +52,17 @@ describe('Client', function(){
             });
         });
         
-        it('should callback on error', function(done){
-            client.connect({}, function(error){
+        it('should callback on error', function(done) {
+            client.connect({}, function(error) {
                 assert(error);
                 done();
             });
             server.destroy();
         });
         
-        it('should send accept-version header', function(done){
+        it('should send accept-version header', function(done) {
             
-            server.on('connection', function(server){
+            server.on('connection', function(server) {
                 assert(server.headers['accept-version'] === '1.0,1.1,1.2');
                 done();
             });
@@ -71,20 +71,20 @@ describe('Client', function(){
         });
     });
     
-    describe('#disconnect', function(){
+    describe('#disconnect', function() {
         
-        it('should disconnect', function(done){
-            client.connect('localhost', function(){
-                client.disconnect(function(error){
+        it('should disconnect', function(done) {
+            client.connect('localhost', function() {
+                client.disconnect(function(error) {
                     assert(!error);
                     done();
                 });
             });
         });
         
-        it('should request a receipt', function(done){
-            client.connect('localhost', function(){
-                server._disconnect = function(frame, beforeSendResponse){
+        it('should request a receipt', function(done) {
+            client.connect('localhost', function() {
+                server._disconnect = function(frame, beforeSendResponse) {
                     beforeSendResponse();
                     assert(frame.headers.hasOwnProperty('receipt'));
                     done();
@@ -93,20 +93,20 @@ describe('Client', function(){
             });
         });
         
-        it('should emit finish event before emitting end event', function(done){
-            client.connect('localhost', function(){
+        it('should emit finish event before emitting end event', function(done) {
+            client.connect('localhost', function() {
                 
                 var finished = false;
                 var ended = false;
                 
                 // We are ending the connection
-                client.on('finish', function(){
+                client.on('finish', function() {
                     finished = true;
                     assert(!ended);
                 });
                 
                 // The remote host has ended the connection
-                client.on('end', function(){
+                client.on('end', function() {
                     ended = true;
                     assert(finished);
                     done();
@@ -116,14 +116,14 @@ describe('Client', function(){
             });
         });
         
-        it('should cause an error on sending any subsequent frame', function(done){
-            client.connect('localhost', function(){
+        it('should cause an error on sending any subsequent frame', function(done) {
+            client.connect('localhost', function() {
                 
-                server._send = function(frame, beforeSendResponse){};
+                server._send = function(frame, beforeSendResponse) {};
                 
-                server.on('error', function(){});
+                server.on('error', function() {});
                 
-                client.on('error', function(e){
+                client.on('error', function(e) {
                     assert(e.message === 'cannot send frame on closed stream');
                     done();
                 });
@@ -134,9 +134,9 @@ describe('Client', function(){
             });
         });
         
-        it('should callback on error', function(done){
+        it('should callback on error', function(done) {
             
-            client.disconnect(function(error){
+            client.disconnect(function(error) {
                assert(error);
                done(); 
             });
@@ -145,17 +145,17 @@ describe('Client', function(){
         });
     });
     
-    describe('#send', function(){
+    describe('#send', function() {
         
-        it('should send a message', function(done){
+        it('should send a message', function(done) {
             
-            server._send = function(frame, beforeSendResponse){
+            server._send = function(frame, beforeSendResponse) {
                 
-                assert(frame.headers['destination'] === '/test');
+                assert(frame.headers.destination === '/test');
                 
                 var writable = new BufferWritable(new Buffer(26));
                 
-                frame.on('end', function(){
+                frame.on('end', function() {
                     beforeSendResponse();
                     assert(writable.getWrittenSlice().toString() === 'abcdefgh');
                     done();
@@ -164,26 +164,26 @@ describe('Client', function(){
                 frame.pipe(writable);
             };
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 var frame = client.send({destination: '/test'});
                 frame.write('abcd');
                 frame.end('efgh');
             });
         });
         
-        it('should treat the first argument as the destination if it\'s a string value', function(done){
+        it('should treat the first argument as the destination if it\'s a string value', function(done) {
             
-            server._send = function(frame, beforeSendResponse){
-                assert(frame.headers['destination'] === '/test');
+            server._send = function(frame, beforeSendResponse) {
+                assert(frame.headers.destination === '/test');
                 var writable = new BufferWritable(new Buffer(26));
-                frame.on('end', function(){
+                frame.on('end', function() {
                     beforeSendResponse();
                     done();
                 });
                 frame.pipe(writable);
             };
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 var frame = client.send('/test');
                 frame.write('abcd');
                 frame.end('efgh');
@@ -191,10 +191,10 @@ describe('Client', function(){
         });
     });
     
-    describe('#destroy', function(){
+    describe('#destroy', function() {
         
-        it('should emit an error event with the passed error argument', function(done){
-            client.once('error', function(exception){
+        it('should emit an error event with the passed error argument', function(done) {
+            client.once('error', function(exception) {
                 assert(exception instanceof Error);
                 assert(exception.message === 'test message');
                 done();
@@ -202,33 +202,33 @@ describe('Client', function(){
             client.destroy(new Error('test message'));
         });
         
-        it('should call the destroy method on the transport socket', function(done){
+        it('should call the destroy method on the transport socket', function(done) {
             
             var socket = client.getTransportSocket();
-            socket.once('error', function(){});
-            socket.once('close', function(){
+            socket.once('error', function() {});
+            socket.once('close', function() {
                 done();
             });
             
-            client.once('error', function(){});
+            client.once('error', function() {});
             
             client.destroy();
         });
         
-        it('should not emit an error event if no error argument is passed', function(done){
-            client.on('error', function(){assert(false);});
+        it('should not emit an error event if no error argument is passed', function(done) {
+            client.on('error', function() {assert(false);});
             client.destroy();
-            process.nextTick(function(){
+            process.nextTick(function() {
                 done();
             });
         });
         
     });
     
-    describe('on receiving an unknown command', function(){
-        it('should emit an error event', function(done){
+    describe('on receiving an unknown command', function() {
+        it('should emit an error event', function(done) {
             
-            client.once('error', function(exception){
+            client.once('error', function(exception) {
                 assert(exception.message === 'Protocol error: unknown command \'FOIDSUF\'');
                 done();
             });
@@ -237,62 +237,62 @@ describe('Client', function(){
         });
     });
     
-    describe('on receiving an ERROR frame', function(){
+    describe('on receiving an ERROR frame', function() {
        
-        it('should emit an error event', function(done){
+        it('should emit an error event', function(done) {
             
-            client.once('error', function(){
+            client.once('error', function() {
                 done();
             });
             
             server.sendFrame('ERROR', {}).end();
         });
         
-        it('should close the transport', function(done){
+        it('should close the transport', function(done) {
             
-            client.getTransportSocket().on('close', function(){
+            client.getTransportSocket().on('close', function() {
                 done();    
             });
             
-            client.once('error', function(){});
+            client.once('error', function() {});
             
             server.sendFrame('ERROR', {}).end();
         });
     });
     
-    describe('#subscribe', function(){
+    describe('#subscribe', function() {
         
-        it('should subscribe to a destination', function(done){
+        it('should subscribe to a destination', function(done) {
                 
-            server._subscribe = function(frame, beforeSendResponse){
+            server._subscribe = function(frame, beforeSendResponse) {
                 done();
             };
             
-            server._unsubscribe = function(){assert(false);};
+            server._unsubscribe = function() {assert(false);};
             
-            client.connect('localhost', function(){
-                client.subscribe({destination: '/test'}, function(){});
+            client.connect('localhost', function() {
+                client.subscribe({destination: '/test'}, function() {});
             });
         });
         
-        it('should treat the first argument as the destination if it\'s a string value', function(done){
+        it('should treat the first argument as the destination if it\'s a string value', function(done) {
             
-            server._subscribe = function(frame, beforeSendResponse){
+            server._subscribe = function(frame, beforeSendResponse) {
                 done();
             };
             
-            server._unsubscribe = function(){assert(false);};
+            server._unsubscribe = function() {assert(false);};
             
-            client.connect('localhost', function(){
-                client.subscribe('/test', function(){});
+            client.connect('localhost', function() {
+                client.subscribe('/test', function() {});
             });
         });
         
-        it('should callback on message', function(done){
+        it('should callback on message', function(done) {
             
-            server._subscribe = function(frame, beforeSendResponse){
+            server._subscribe = function(frame, beforeSendResponse) {
                 
-                var id = frame.headers['id'];
+                var id = frame.headers.id;
                 
                 beforeSendResponse();
                 
@@ -308,15 +308,15 @@ describe('Client', function(){
             server._nack = fail;
             server._unsubscribe = fail;
             
-            client.connect('localhost', function(){
-                var subscription = client.subscribe({destination: '/test'}, function(error, message){
+            client.connect('localhost', function() {
+                var subscription = client.subscribe({destination: '/test'}, function(error, message) {
                     
-                    assert(message.headers['subscription'] == subscription.getId());
+                    assert(message.headers.subscription == subscription.getId());
                     assert(message.headers['message-id'] == '1');
                     
                     var writable = new BufferWritable(new Buffer(26));
                     
-                    message.on('end', function(){
+                    message.on('end', function() {
                         
                         message.ack();
                         
@@ -330,11 +330,11 @@ describe('Client', function(){
             });
         });
         
-        it('should send one ACK for multiple messages in client ack mode', function(done){
+        it('should send one ACK for multiple messages in client ack mode', function(done) {
             
-            server._subscribe = function(frame, beforeSendResponse){
+            server._subscribe = function(frame, beforeSendResponse) {
                 
-                var id = frame.headers['id'];
+                var id = frame.headers.id;
                 
                 beforeSendResponse();
                 
@@ -376,13 +376,13 @@ describe('Client', function(){
             
             var acks = [];
             
-            server._ack = function(frame, beforeSendResponse){
+            server._ack = function(frame, beforeSendResponse) {
                 
                 acks.push(frame.headers['message-id']);
                 
                 beforeSendResponse();
                 
-                switch(acks.length){
+                switch(acks.length) {
                     case 1:
                         assert(acks[0] == 'b');
                         break;
@@ -394,13 +394,13 @@ describe('Client', function(){
                 }
             };
             
-            server._nack = function(frame, beforeSendResponse){
+            server._nack = function(frame, beforeSendResponse) {
                 
                 acks.push(frame.headers['message-id']);
                 
                 beforeSendResponse();
                 
-                switch(acks.length){
+                switch(acks.length) {
                     case 2:
                         assert(acks[1] == 'c');
                         break;
@@ -410,19 +410,19 @@ describe('Client', function(){
             
             server._unsubscribe = fail;
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 
                 var messages = [];
                 
-                client.subscribe({destination: '/test', ack: 'client'}, function(error, message){
+                client.subscribe({destination: '/test', ack: 'client'}, function(error, message) {
                     
                     messages.push(message);
                     
                     var writable = new BufferWritable(new Buffer(26));
                     
-                    message.on('end', function(){
+                    message.on('end', function() {
                         
-                        switch(messages.length){
+                        switch(messages.length) {
                             case 2:
                                 messages[1].ack();
                                 messages[0].ack();
@@ -443,11 +443,11 @@ describe('Client', function(){
             });
         });
 
-        it('should send one ACK for each message in client-individual ack mode', function(done){
+        it('should send one ACK for each message in client-individual ack mode', function(done) {
             
-            server._subscribe = function(frame, beforeSendResponse){
+            server._subscribe = function(frame, beforeSendResponse) {
                 
-                var id = frame.headers['id'];
+                var id = frame.headers.id;
                 
                 beforeSendResponse();
                 
@@ -468,13 +468,13 @@ describe('Client', function(){
             
             var acks = [];
             
-            server._ack = function(frame, beforeSendResponse){
+            server._ack = function(frame, beforeSendResponse) {
                 
                 acks.push(frame.headers['message-id']);
                 
                 beforeSendResponse();
                 
-                switch(acks.length){
+                switch(acks.length) {
                     case 1:
                         assert(acks[0] == 1);
                         break;
@@ -489,13 +489,13 @@ describe('Client', function(){
             server._nack = fail;
             server._unsubscribe = fail;
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 
-                client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message){
+                client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
                     
                     var writable = new BufferWritable(new Buffer(26));
                     
-                    message.on('end', function(){
+                    message.on('end', function() {
                         message.ack();
                     });
                     
@@ -504,21 +504,21 @@ describe('Client', function(){
             });
         });
         
-        describe('Subscription', function(){
+        describe('Subscription', function() {
             
-            it('should pass error to the message listener', function(done){
+            it('should pass error to the message listener', function(done) {
                 
-                server._subscribe = function(frame, beforeSendResponse){
-                    beforeSendResponse();
-                }
-                
-                server._unsubscribe = function(frame, beforeSendResponse){
+                server._subscribe = function(frame, beforeSendResponse) {
                     beforeSendResponse();
                 };
                 
-                client.connect('localhost', function(){
+                server._unsubscribe = function(frame, beforeSendResponse) {
+                    beforeSendResponse();
+                };
+                
+                client.connect('localhost', function() {
                     
-                    client.subscribe({destination: '/test'}, function(error){
+                    client.subscribe({destination: '/test'}, function(error) {
                         assert(error && error.message === 'testing');
                         done();
                     });
@@ -527,30 +527,30 @@ describe('Client', function(){
                 });
             });
             
-            describe('#unsubscribe', function(){
+            describe('#unsubscribe', function() {
                 
-                it('should unsubscribe at the server', function(done){
+                it('should unsubscribe at the server', function(done) {
                     
-                    server._subscribe = function(frame, beforeSendResponse){
+                    server._subscribe = function(frame, beforeSendResponse) {
                         beforeSendResponse();
                     };
                     
-                    server._unsubscribe = function(frame, beforeSendResponse){
+                    server._unsubscribe = function(frame, beforeSendResponse) {
                         beforeSendResponse();
                         done();
                     };
                     
-                    client.connect('localhost', function(){
-                        var subscription = client.subscribe({destination: '/test'}, function(){});
+                    client.connect('localhost', function() {
+                        var subscription = client.subscribe({destination: '/test'}, function() {});
                         subscription.unsubscribe();
                     });
                 });
                 
-                it('should not pass error to the message listener after unsubscribe', function(done){
+                it('should not pass error to the message listener after unsubscribe', function(done) {
                     
-                    server._subscribe = function(frame, beforeSendResponse){
+                    server._subscribe = function(frame, beforeSendResponse) {
                         
-                        var id = frame.headers['id'];
+                        var id = frame.headers.id;
                         
                         beforeSendResponse();
                         
@@ -560,27 +560,27 @@ describe('Client', function(){
                             'destination': '/test',
                             'content-type': 'text/plain'
                         }).end('hello');
-                    }
+                    };
                     
-                    server._unsubscribe = function(frame, beforeSendResponse){
+                    server._unsubscribe = function(frame, beforeSendResponse) {
                         beforeSendResponse();
                     };
                     
-                    client.connect('localhost', function(){
+                    client.connect('localhost', function() {
                         
-                        var subscription = client.subscribe({destination: '/test'}, function(error, message){
+                        var subscription = client.subscribe({destination: '/test'}, function(error, message) {
                             
                             assert(!error);
                             assert(message);
                             
                             subscription.unsubscribe();
                             
-                            process.nextTick(function(){
+                            process.nextTick(function() {
                                 client.destroy(new Error('testing'));
                             });
                         });
                         
-                        client.on('error', function(){
+                        client.on('error', function() {
                             done();
                         });
                     });
@@ -590,49 +590,49 @@ describe('Client', function(){
         });
     });
     
-    describe('#begin', function(){
+    describe('#begin', function() {
         
-        it('should send a BEGIN frame', function(done){
+        it('should send a BEGIN frame', function(done) {
             
-            server._begin = function(frame, beforeSendResponse){
+            server._begin = function(frame, beforeSendResponse) {
                 done();
             };
             
-            server._commit = function(){};
-            server._abort = function(){};
+            server._commit = function() {};
+            server._abort = function() {};
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 client.begin();
             });
         });
         
-        it('should allow a transaction-id argument', function(done){
+        it('should allow a transaction-id argument', function(done) {
             
-            server._begin = function(frame, beforeSendResponse){
+            server._begin = function(frame, beforeSendResponse) {
                 assert(frame.headers.transaction === 'myTransactionID');
                 done();
             };
             
-            server._commit = function(){};
-            server._abort = function(){};
+            server._commit = function() {};
+            server._abort = function() {};
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 client.begin('myTransactionID');
             });
         });
         
-        it('should allow a header argument', function(done){
+        it('should allow a header argument', function(done) {
             
-            server._begin = function(frame, beforeSendResponse){
+            server._begin = function(frame, beforeSendResponse) {
                 assert(frame.headers.transaction === 'transaction_1');
                 assert(frame.headers.test === '1');
                 done();
             };
             
-            server._commit = function(){};
-            server._abort = function(){};
+            server._commit = function() {};
+            server._abort = function() {};
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 client.begin({
                     transaction: 'transaction_1',
                     test: 1
@@ -640,95 +640,95 @@ describe('Client', function(){
             });
         });
         
-        it('should generate a transaction id if the transaction header is missing from the headers object', function(done){
+        it('should generate a transaction id if the transaction header is missing from the headers object', function(done) {
             
-            server._begin = function(frame, beforeSendResponse){
+            server._begin = function(frame, beforeSendResponse) {
                 assert(frame.headers.transaction === '1');
                 assert(frame.headers.test === '2');
                 done();
             };
             
-            server._commit = function(){};
-            server._abort = function(){};
+            server._commit = function() {};
+            server._abort = function() {};
             
-            client.connect('localhost', function(){
+            client.connect('localhost', function() {
                 client.begin({
                     test: 2
                 });
             });
         });
         
-        describe('Transaction', function(){
+        describe('Transaction', function() {
             
-            var setupTransaction = function(callback){
-                client.connect('localhost', function(){
+            var setupTransaction = function(callback) {
+                client.connect('localhost', function() {
                     var transaction = client.begin();
                     callback(transaction);
                 });
             };
             
-            it('should be assigned a transaction id', function(done){
+            it('should be assigned a transaction id', function(done) {
                 
-                server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
-                server._commit = function(){};
-                server._abort = function(){};
+                server._begin = function(frame, beforeSendResponse) {beforeSendResponse();};
+                server._commit = function() {};
+                server._abort = function() {};
                 
-                setupTransaction(function(transaction){
+                setupTransaction(function(transaction) {
                    assert(transaction.id === 1);
                    done();
                 });
             });
             
-            describe('#send', function(){
-                it('should create a SEND frame with a transaction header', function(done){
+            describe('#send', function() {
+                it('should create a SEND frame with a transaction header', function(done) {
                     
-                    server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
-                    server._abort = function(){};
-                    server._commit = function(){};
-                    server._send = function(frame){
-                        assert(frame.headers['transaction'] === 1 || frame.headers['transaction'] === '1');
+                    server._begin = function(frame, beforeSendResponse) {beforeSendResponse();};
+                    server._abort = function() {};
+                    server._commit = function() {};
+                    server._send = function(frame) {
+                        assert(frame.headers.transaction === 1 || frame.headers.transaction === '1');
                         done();
                     };
                     
-                    setupTransaction(function(transaction){
+                    setupTransaction(function(transaction) {
                         var frame = transaction.send({destination:'/abc'});
                         assert(frame.command === 'SEND');
-                        assert(frame.headers['transaction'] === 1 || frame.headers['transaction'] === '1');
+                        assert(frame.headers.transaction === 1 || frame.headers.transaction === '1');
                         frame.end();
                     });
                 });
             });
             
-            describe('#abort', function(){
-                it('should send an ABORT frame with a transaction header', function(done){
+            describe('#abort', function() {
+                it('should send an ABORT frame with a transaction header', function(done) {
                     
-                    server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
+                    server._begin = function(frame, beforeSendResponse) {beforeSendResponse();};
                     
-                    server._abort = function(frame){
-                        assert(frame.headers['transaction'] === '1');
+                    server._abort = function(frame) {
+                        assert(frame.headers.transaction === '1');
                         done();
                     };
                     
-                    server._commit = function(){};
+                    server._commit = function() {};
                     
-                    setupTransaction(function(transaction){
+                    setupTransaction(function(transaction) {
                         transaction.abort();
                     });
                 });
             });
             
-            describe('#commit', function(){
-                it('should send a COMMIT frame with a transaction header', function(done){
+            describe('#commit', function() {
+                it('should send a COMMIT frame with a transaction header', function(done) {
                     
-                    server._begin = function(frame, beforeSendResponse){beforeSendResponse();};
-                    server._abort = function(frame){};
+                    server._begin = function(frame, beforeSendResponse) {beforeSendResponse();};
+                    server._abort = function(frame) {};
                     
-                    server._commit = function(frame){
-                        assert(frame.headers['transaction'] === '1');
+                    server._commit = function(frame) {
+                        assert(frame.headers.transaction === '1');
                         done();
                     };
                     
-                    setupTransaction(function(transaction){
+                    setupTransaction(function(transaction) {
                         transaction.commit();
                     });
                 });
@@ -736,19 +736,19 @@ describe('Client', function(){
         });
     });
 
-    it("should send and receive heart beats", function(done){
+    it("should send and receive heart beats", function(done) {
         
         client.setHeartbeat([2, 2]);
         server.setHeartbeat([2, 2]);
         
-        client.connect({}, function(){
+        client.connect({}, function() {
             
             var socket = client.getTransportSocket();
             
             var bytesRead = socket.bytesRead;
             var bytesWritten = socket.bytesWritten;
             
-            setTimeout(function(){
+            setTimeout(function() {
                 assert(socket.bytesRead > bytesRead);
                 assert(socket.bytesWritten > bytesWritten);
                 done();
