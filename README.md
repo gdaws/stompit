@@ -8,26 +8,30 @@ Compatible with STOMP 1.0, 1.1 and 1.2 servers.
 
 Send message:
 
-    require('stompit')
-     .broker('failover:(tcp://localhost:61613,tcp://localhsot:61614)?randomize=false')
-     .send('/queue/a', 'hello queue a', function(error){
-       if(!error){
-         console.log('message sent');
-       }
-     });
+```javascript
+require('stompit')
+ .broker('failover:(tcp://localhost:61613,tcp://localhsot:61614)?randomize=false')
+ .send('/queue/a', 'hello queue a', function(error) {
+   if (!error) {
+     console.log('message sent');
+   }
+ });
+```
 
 Receive messages:
 
-    require('stompit')
-     .broker()
-     .subscribe('/queue/a', function(error, message){
-        if(!error){
-          message.pipe(somethingWritable).on('end', function(){
-            console.log('message received');
-            message.ack();
-          });
-        }
-     });
+```javascript
+require('stompit')
+ .broker()
+ .subscribe('/queue/a', function(error, message){
+    if (!error) {
+      message.pipe(somethingWritable).on('end', function() {
+        console.log('message received');
+        message.ack();
+      });
+    }
+ });
+```
 
 ## Features
 
@@ -36,14 +40,7 @@ Receive messages:
 * High-level API - automatic connection management and failover;
 * Low-level API - socket-like interface with manual connection management and error handling.
 
-## Dependencies
-
-* Node v0.10 or later - stompit library is dependant on node's new stream api, streams2;
-* qs (node-querystring) - parsing query strings in failover URIs;
-* Optimist - used in the utility programs bin/stomp-publish and bin/stomp-consume;
-* Mocha - used for testing.
-
-## Installation
+## Install
 
  `npm install stompit`
 
