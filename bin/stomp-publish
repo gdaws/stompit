@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
+/*jslint node: true, indent: 2, unused: true, maxlen: 80, camelcase: true */
+
 var argv = require('optimist')
-    .usage('Usage: $0 [options] uri destination')
-    .demand(2)
-    .default('v', false)
-    .boolean('v')
-    .alias('H', 'header')
-    .alias('l', 'content-length')
-    .alias('f', 'file')
-    .alias('v', 'verbose')
-    .describe('H', 'Append header line')
-    .describe('f', 'Send content in file')
-    .argv;
+  .usage('Usage: $0 [options] uri destination')
+  .demand(2)
+  .default('v', false)
+  .boolean('v')
+  .alias('H', 'header')
+  .alias('l', 'content-length')
+  .alias('f', 'file')
+  .alias('v', 'verbose')
+  .describe('H', 'Append header line')
+  .describe('f', 'Send content in file')
+  .argv;
 
 var fs          = require('fs');
 var stompit     = require('stompit');
@@ -24,60 +26,64 @@ var destination = argv._[1];
 var input = process.stdin;
 var contentLength = argv['content-length'];
 
-if(argv.file){
-    
-    var filename = argv.file;
-    
-    if(!fs.existsSync(filename)){
-        appUtil.fatalError(util.format('File not found: %s', filename));
+if (argv.file) {
+  
+  var filename = argv.file;
+  
+  if (!fs.existsSync(filename)) {
+    appUtil.fatalError(util.format('File not found: %s', filename));
+  }
+  
+  if (contentLength === void 0) {
+    try{
+      contentLength = fs.statSync(filename).size;
     }
-    
-    if(contentLength === void 0){
-        try{
-            contentLength = fs.statSync(filename).size;
-        }
-        catch(e){
-            appUtil.fatalError(e.message);
-        }
+    catch(e) {
+      appUtil.fatalError(e.message);
     }
-    
-    input = fs.createReadStream(argv.file);
-    input.on('error', appUtil.fatalErrorEvent('File error: %s'));
+  }
+  
+  input = fs.createReadStream(argv.file);
+  input.on('error', appUtil.fatalErrorEvent('File error: %s'));
 }
 
 var failover = new stompit.Failover(uri, {
-    maxReconnectAttempts: 0
+  maxReconnectAttempts: 0
 });
 
-failover.connect(function(error, client, reconnect){
-    
-    if(error){
-        appUtil.fatalError(error.message);
-        return;
-    }
-    
-    appUtil.log(util.format('Established STOMP %s session with %s', client.headers['version'], client.headers['server'] || 'unnamed server'));
-    
-    client.on('error', function(){
-        reconnect(); 
-    });
-    
-    var headers = {
-        'destination': destination,
-        'content-length': contentLength
-    };
-    
-    var userDefinedHeaders = {};
-    if(argv.header){
-        userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
-    }
-    
-    var message = client.send(util.extend(userDefinedHeaders, headers));
-    
-    message.once('finish', function(){
-        appUtil.log(util.format('Sent message to \'%s\'', destination));
-        client.disconnect();
-    });
-    
-    input.pipe(message);
+failover.connect(function(error, client, reconnect) {
+  
+  if (error) {
+    appUtil.fatalError(error.message);
+    return;
+  }
+  
+  appUtil.log(util.format(
+    'Established STOMP %s session with %s', 
+    client.headers['version'], 
+    client.headers['server'] || 'unnamed server'
+  ));
+  
+  client.on('error', function() {
+    reconnect(); 
+  });
+  
+  var headers = {
+    'destination': destination,
+    'content-length': contentLength
+  };
+  
+  var userDefinedHeaders = {};
+  if (argv.header) {
+    userDefinedHeaders = appUtil.parseHeaderLines(argv.header);
+  }
+  
+  var message = client.send(util.extend(userDefinedHeaders, headers));
+  
+  message.once('finish', function() {
+    appUtil.log(util.format('Sent message to \'%s\'', destination));
+    client.disconnect();
+  });
+  
+  input.pipe(message);
 });
