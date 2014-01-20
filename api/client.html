@@ -160,12 +160,57 @@
       <td class="name">headers<span class="default-value"></span></td>
       <td class="type">Object</td>
       <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">destination<span class="default-value"></span></td>
+              <td class="type">String</td>
+              <td class="desc">
+                <p>A string value required by the server</p>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">content-length<span class="default-value"></span></td>
+              <td class="type">Number</td>
+              <td class="desc">
+                <p>This header is required if sending binary data or sending data includes null byte</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </td>
     </tr>
     <tr>
       <td class="name">options<span class="default-value"></span></td>
       <td class="type">Object</td>
       <td class="desc">
+        <table class="params table table-bordered table-condensed">
+          <caption></caption>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name">onReceipt<span class="default-value"></span></td>
+              <td class="type">Function</td>
+              <td class="desc">
+                <p>Called when the receipt frame is received.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </td>
     </tr>
   </tbody>
@@ -175,6 +220,14 @@
   for sending the frame body content.
   
 </p>
+<pre>var frame = client.send({
+  'destination': '/queue/a',
+  'content-type': 'text/plain'
+});
+
+frame.write('hello');
+frame.end();
+</pre>
 <h2 class="function">Client.sendFrame(command, headers, [options])<span class="returns">stream.Writable</span></h2>
 <table class="params table table-bordered table-condensed">
   <caption></caption>
