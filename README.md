@@ -23,7 +23,7 @@ Receive messages:
 ```javascript
 require('stompit')
  .broker()
- .subscribe('/queue/a', function(error, message){
+ .subscribe('/queue/a', function(error, message) {
     if (!error) {
       message.pipe(somethingWritable).on('end', function() {
         console.log('message received');
