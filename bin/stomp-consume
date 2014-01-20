@@ -156,7 +156,12 @@ failover.connect(function(error, client, reconnect){
     
     startTimeout();
     
-    client.subscribe(util.extend(userDefinedHeaders, headers), function(message){
+    client.subscribe(util.extend(userDefinedHeaders, headers), function(error, message){
+        
+        if(error){
+            return;    
+        }
+        
         message.once('end', startTimeout);
         messageHandler.call(client, message);
     });
