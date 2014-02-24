@@ -1,10 +1,10 @@
 /*
- * Test stompit.Failover
+ * Test stompit.ConnectFailover
  * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
  * MIT licensed
  */
 
-var Failover        = require('../lib/failover');
+var ConnectFailover = require('../lib/connect_failover');
 var util            = require('../lib/util');
 var MemorySocket    = require('../lib/util/memory_socket');
 var Server          = require('../lib/server');
@@ -64,13 +64,13 @@ var defaultOptions = {
     randomize: true
 };
 
-describe('Failover', function() {
+describe('ConnectFailover', function() {
     
     describe('#connect', function() {
         
         it('should connect to the primary server first', function(done) {
             
-            var failover = new Failover([
+            var failover = new ConnectFailover([
                 createConnector('primary'), 
                 createConnector('secondary')
             ], defaultOptions);
@@ -84,7 +84,7 @@ describe('Failover', function() {
         
         it('should reconnect', function(done) {
             
-            var failover = new Failover([
+            var failover = new ConnectFailover([
                 createConnector(),
                 createConnector()
             ], defaultOptions);
@@ -104,7 +104,7 @@ describe('Failover', function() {
         
         it('should reconnect to the next server', function(done) {
             
-            var failover = new Failover([
+            var failover = new ConnectFailover([
                 createConnector(0),
                 createConnector(1),
                 createConnector(2)
@@ -129,7 +129,7 @@ describe('Failover', function() {
         
         it('should stop reconnecting after 3 successful re-connects', function(done) {
             
-            var failover = new Failover([
+            var failover = new ConnectFailover([
                 createConnector(),
                 createConnector(),
             ], util.extend(defaultOptions, {
@@ -155,7 +155,7 @@ describe('Failover', function() {
         
         it('should connect after any number of failed attempts', function(done) {
             
-            var failover = new Failover([
+            var failover = new ConnectFailover([
                 createBrokenConnector(8)
             ], util.extend(defaultOptions, {
                 maxReconnectAttempts: -1,
@@ -171,7 +171,7 @@ describe('Failover', function() {
         
         it('should give up trying to connect after a number of failed attempts', function(done) {
             
-            var failover = new Failover([
+            var failover = new ConnectFailover([
                 createBrokenConnector(8)
             ], util.extend(defaultOptions, {
                 maxReconnectAttempts: 2,
@@ -186,9 +186,9 @@ describe('Failover', function() {
         });
     });
     
-    describe("#_parseFailoverUri", function() {
+    describe("#_parseConnectFailoverUri", function() {
         
-        var failover = new Failover([], {});
+        var failover = new ConnectFailover([], {});
         var parse = failover._parseFailoverUri.bind(failover);
         
         it('should parse a simple uri', function() {
@@ -273,7 +273,7 @@ describe('Failover', function() {
 
     describe('#_parseServerUri', function() {
         
-        var failover = new Failover([], {});
+        var failover = new ConnectFailover([], {});
         var parse = failover._parseServerUri.bind(failover);
         
         it('should parse a typical uri', function() {

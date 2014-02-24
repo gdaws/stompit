@@ -5,13 +5,13 @@
 var Messaging = require("./lib/messaging");
 
 module.exports = {
-
+  
   IncomingFrameStream: require("./lib/incoming_frame_stream"),
   FrameOutputStream: require("./lib/frame_output_stream"),
 
   Client: require("./lib/client"),
-
-  Failover: require("./lib/failover"),
+  
+  ConnectFailover: require("./lib/connect_failover"),
   Messaging: Messaging,
 
   connect: require("./lib/connect"),
