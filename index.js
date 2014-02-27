@@ -7,8 +7,8 @@ module.exports = {
   
   Client:               require('./lib/client'),
   
-  ConnectFailover:      require('./lib/connect_failover'),
   connect:              require('./lib/connect'),
+  ConnectFailover:      require('./lib/connect_failover'),
   
   Channel:              require('./lib/channel'),
   ChannelFactory:       require('./lib/channel_factory'),
