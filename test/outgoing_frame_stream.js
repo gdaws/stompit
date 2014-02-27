@@ -1,15 +1,15 @@
 /*
- * Test stompit.FrameOutputStream
+ * Test stompit.OutgoingFrameStream
  * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
  * MIT licensed
  */
 
-var FrameOutputStream   = require('../lib/frame_output_stream');
+var OutgoingFrameStream = require('../lib/outgoing_frame_stream');
 var BufferWritable      = require('../lib/util/buffer/writable');
 var stream              = require('stream');
 var assert              = require('assert');
 
-describe('FrameOutputStream', function(){
+describe('OutgoingFrameStream', function(){
     
     var dest;
     var writable;
@@ -18,7 +18,7 @@ describe('FrameOutputStream', function(){
     beforeEach(function(){
         dest = new Buffer(256);
         writable = new BufferWritable(dest);
-        output = new FrameOutputStream(writable);
+        output = new OutgoingFrameStream(writable);
     });
     
     describe('#frame', function(){

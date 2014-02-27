@@ -3,8 +3,8 @@
 module.exports = {
   
   IncomingFrameStream:  require('./lib/incoming_frame_stream'),
-  FrameOutputStream:    require('./lib/frame_output_stream'),
-
+  OutgoingFrameStream:  require('./lib/outgoing_frame_stream'),
+  
   Client:               require('./lib/client'),
   
   ConnectFailover:      require('./lib/connect_failover'),
