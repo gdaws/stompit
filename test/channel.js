@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var Channel         = require('../lib/messaging');
+var Channel         = require('../lib/channel');
 var ConnectFailover = require('../lib/connect_failover');
 var MemorySocket    = require('../lib/util/memory_socket');
 var BufferWritable  = require('../lib/util/buffer/writable');
@@ -39,6 +39,14 @@ describe('Channel', function() {
                 server1.sendError('unable to handle message').end();
             });
         });
+        
+        server1._disconnect = function(frame, beforeSendResponse){
+            beforeSendResponse(null);
+        };
+        
+        server2._disconnect = function(frame, beforeSendResponse){
+            beforeSendResponse(null);
+        };
         
         var connectFailover = new ConnectFailover([
             createConnector(server1.getTransportSocket()),
@@ -246,25 +254,37 @@ describe('Channel', function() {
             });
         });
 
-        it('should return an object with a cancel method', function(done) {
+        it('should return an object with a working cancel method', function(done) {
             
             server2.on('connection', function() {
+                
+                var subscriptionId = null;
+                
                 server2.setCommandHandler('SUBSCRIBE', function(frame, beforeSendResponse) {
-                    var id = frame.headers.id;
+                    
+                    subscriptionId = frame.headers.id;
+                    
                     beforeSendResponse();
+                    
                     process.nextTick(function() {
-                        server2.sendFrame('MESSAGE', {'subscription':id, 'message-id': 1}).end('message1');
+                        server2.sendFrame('MESSAGE', {
+                            'subscription':subscriptionId, 
+                            'message-id': 1
+                        }).end('message1');
                     });
                 });
-            });
-            
-            server2.on('end', function() {
-                done(); 
+                
+                server2.setCommandHandler('UNSUBSCRIBE', function(frame, beforeSendResponse) {
+                    assert(frame.headers.id === subscriptionId);
+                    done();
+                });
             });
             
             var subscription = msging.subscribe('/queue/test', function(error, message) {
                 subscription.cancel();
             });
+            
+            assert(typeof subscription.cancel === 'function');
         });
     });
     
@@ -340,39 +360,6 @@ describe('Channel', function() {
                     gotCallback = true;
                     checkDone();
                 });
-            });
-
-            it('should perform abort', function(done) {
-                
-                var gotAbort = false;
-                
-                server2.on('connection', function() {
-                    
-                    server2.setCommandHandler('BEGIN', function(frame, beforeSendResponse) {
-                        
-                        server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
-                            var writable = new BufferWritable(new Buffer(26));
-                            frame.pipe(writable);
-                            beforeSendResponse();
-                        });
-                        
-                        server2.setCommandHandler('ABORT', function(frame, beforeSendResponse) {
-                            gotAbort = true;
-                            beforeSendResponse();
-                        });
-                        
-                        beforeSendResponse();
-                    });
-                });
-                
-                server2.on('end', function() {
-                    assert(gotAbort === true);
-                    done();
-                });
-                
-                var transaction = msging.begin();
-                
-                transaction.send('/queue/test', 'message1').abort();
             });
         });
     });
