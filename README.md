@@ -5,10 +5,10 @@ A STOMP client library for node.js compatible with STOMP 1.0, 1.1 and 1.2 server
 Stompit is also a command-line application for publishing and consuming messages with a broker.
 
 Library features include
-* Transport agnostism - the client api supports any transport implementing the Stream.Duplex interface;
-* Frame body streaming - your application can directly control the reading and writing of frame body content;
-* High-level Channel API - subscriptions and sending messages are maintained after recovering from connection errors;
-* Low-level Client API - socket-like interface with manual connection management and error handling.
+* **Transport agnostism** - the client api supports any transport implementing the Stream.Duplex interface;
+* **Frame body streaming** - your application can directly control the reading and writing of frame body content;
+* **High-level Channel API** - subscriptions and sending messages are maintained after recovering from connection errors;
+* **Low-level Client API** - socket-like interface with manual connection management and error handling.
 
 Example usage of Stompit's Channel API:
 ```javascript
