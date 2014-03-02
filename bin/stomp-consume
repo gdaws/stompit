@@ -112,7 +112,7 @@ else{
   };
 }
 
-var failover = new stompit.Failover(uri, {
+var failover = new stompit.ConnectFailover(uri, {
   maxReconnectAttempts: 0
 });
 

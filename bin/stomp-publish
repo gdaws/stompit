@@ -47,7 +47,7 @@ if (argv.file) {
   input.on('error', appUtil.fatalErrorEvent('File error: %s'));
 }
 
-var failover = new stompit.Failover(uri, {
+var failover = new stompit.ConnectFailover(uri, {
   maxReconnectAttempts: 0
 });
 
