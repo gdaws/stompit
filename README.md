@@ -2,12 +2,13 @@
 
 A STOMP client library for node.js compatible with STOMP 1.0, 1.1 and 1.2 servers.
 
-Stompit is also a command-line application for publishing and consuming messages with a broker.
+Stompit is also a command-line application for publishing and consuming messages 
+with a broker.
 
-Library features include
-* **Transport agnostism** - the client api supports any transport implementing the Stream.Duplex interface;
-* **Frame body streaming** - your application can directly control the reading and writing of frame body content;
-* **High-level Channel API** - subscriptions and sending messages are maintained after recovering from connection errors;
+Library features include:
+* **Transport agnostic** - the client api supports any transport implementing the Stream.Duplex interface;
+* **Frame body streaming** - your application is in direct control of reading and writing frame body data;
+* **High-level Channel API** - messages being sent and subscriptions are maintained after connection interruptions;
 * **Low-level Client API** - socket-like interface with manual connection management and error handling.
 
 Example usage of Stompit's Channel API:
@@ -71,6 +72,51 @@ stomp-consume "failover:(localhost:61613)" /queue/a
 ## Install
 
  `npm install stompit`
+
+## Stompit API
+
+* stompit.connect(options, [connectionListener])
+
+## Client
+
+* new stompit.Client(transport, [options])
+* client.connect(headers, [callback])
+* client.disconnect([callback])
+* client.send(headers, [options])
+* client.sendFrame(command, headers, [options])
+
+### Subscription
+
+* client.subscribe(headers, onMessageCallback) → Subscription
+* subscription.unsubscribe()
+* onMessageCallback(error, message)
+* message inherits stream.Readable
+* message.readString(encoding, callback)
+* message.ack()
+* message.nack()
+
+### Transaction
+
+* client.begin([headers])
+* transaction.send(headers, [options])
+* transaction.commit([options])
+* transaction.abort([options])
+
+## Connection Failover
+
+* new stompit.ConnectFailover(servers, [options])
+* failover.connect(connectCallback)
+* connectCallback(error, reconnect)
+
+## Channel
+* new stompit.Channel(connectFailover, [options])
+* channel.send(headers, body, [callback])
+* channel.subscribe(headers, onMessageCallback)
+* channel.begin([headers]) → Transaction
+  * transaction.send(headers, body)
+  * transaction.commit()
+  * transaction.abort()
+* channel.close()
 
 ## Documentation
 
