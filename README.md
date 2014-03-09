@@ -27,9 +27,9 @@ var connections = new stompit.ConnectFailover([
   }
 ]);
 
-var broker = stompit.broker(connections);
+var channel = new stompit.Channel(connections);
 
-broker.send('/queue/a', 'hello', function(error) {
+channel.send('/queue/a', 'hello', function(error) {
   
   if (error) {
     console.log('send error ' + error.message);
@@ -39,7 +39,7 @@ broker.send('/queue/a', 'hello', function(error) {
   console.log('message sent');
 });
 
-broker.subscribe('/queue/a', function(error, message) {
+channel.subscribe('/queue/a', function(error, message) {
   
   if (error) {
     console.log('subscribe error ' + error.message);
@@ -82,6 +82,7 @@ stomp-consume "failover:(localhost:61613)" /queue/a
 * new stompit.Client(transport, [options])
 * client.connect(headers, [callback])
 * client.disconnect([callback])
+* client.destroy([error])
 * client.send(headers, [options])
 * client.sendFrame(command, headers, [options])
 
@@ -90,17 +91,17 @@ stomp-consume "failover:(localhost:61613)" /queue/a
 * client.subscribe(headers, onMessageCallback) → Subscription
 * subscription.unsubscribe()
 * onMessageCallback(error, message)
-* message inherits stream.Readable
-* message.readString(encoding, callback)
-* message.ack()
-* message.nack()
+  * message inherits stream.Readable
+  * message.readString(encoding, callback)
+  * message.ack()
+  * message.nack()
 
 ### Transaction
 
 * client.begin([headers])
-* transaction.send(headers, [options])
-* transaction.commit([options])
-* transaction.abort([options])
+  * transaction.send(headers, [options])
+  * transaction.commit([options])
+  * transaction.abort([options])
 
 ## Connection Failover
 
@@ -114,7 +115,7 @@ stomp-consume "failover:(localhost:61613)" /queue/a
 * channel.subscribe(headers, onMessageCallback)
 * channel.begin([headers]) → Transaction
   * transaction.send(headers, body)
-  * transaction.commit()
+  * transaction.commit([callback])
   * transaction.abort()
 * channel.close()
 
