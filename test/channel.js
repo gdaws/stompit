@@ -35,8 +35,13 @@ describe('Channel', function() {
         server1.on('error', function() {});
         
         server1.on('connection', function() {
+            
             server1.setCommandHandler('SEND', function() {
                 server1.destroy();
+            });
+            
+            server1.setCommandHandler('SUBSCRIBE', function() {
+                server1.destroy(); 
             });
         });
         
@@ -215,6 +220,7 @@ describe('Channel', function() {
             var gotMessage2 = false;
             
             server2.on('connection', function() {
+                
                 server2.setCommandHandler('SUBSCRIBE', function(frame, beforeSendResponse) {
                     var id = frame.headers.id;
                     beforeSendResponse();
