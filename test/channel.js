@@ -25,7 +25,7 @@ var createConnector = function(serverSocket) {
 
 describe('Channel', function() {
     
-    var server1, server2, msging;
+    var server1, server2, chan;
     
     beforeEach(function() {
         
@@ -36,7 +36,7 @@ describe('Channel', function() {
         
         server1.on('connection', function() {
             server1.setCommandHandler('SEND', function() {
-                server1.sendError('unable to handle message').end();
+                server1.destroy();
             });
         });
         
@@ -55,7 +55,7 @@ describe('Channel', function() {
             randomize: false
         });
         
-        msging = new Channel(connectFailover);
+        chan = new Channel(connectFailover);
     });
     
     describe('#send', function() {
@@ -80,7 +80,7 @@ describe('Channel', function() {
                 });
             });
             
-            msging.send('/queue/test!', 'hello', function() {
+            chan.send('/queue/test!', 'hello', function() {
                 assert(usedSecondServer);
                 done();
             });
@@ -111,7 +111,7 @@ describe('Channel', function() {
                 return new BufferReadable(new Buffer('hello'));
             };
             
-            msging.send('/queue/test!', createBody, function() {
+            chan.send('/queue/test!', createBody, function() {
                 assert(countCreateBody === 2);
                 done();
             });
@@ -141,7 +141,7 @@ describe('Channel', function() {
                 }
             });
             
-            msging.send('/queue/test!', 'hello', function() {
+            chan.send('/queue/test!', 'hello', function() {
                 sendCallback = true;
                 if (sendCallback && closedConnection) {
                     done();
@@ -197,7 +197,7 @@ describe('Channel', function() {
                 checkDone();
             });
             
-            msging.send('/queue/test1', 'message1', function() {
+            chan.send('/queue/test1', 'message1', function() {
                 callback1 = true;
                 checkDone();
             }).send('/queue/test2', 'message2', function() {
@@ -225,7 +225,7 @@ describe('Channel', function() {
                 });
             });
             
-            msging.subscribe('/queue/test', function(error, message) {
+            chan.subscribe('/queue/test', function(error, message) {
                 
                 if (error) {
                     return;
@@ -280,7 +280,7 @@ describe('Channel', function() {
                 });
             });
             
-            var subscription = msging.subscribe('/queue/test', function(error, message) {
+            var subscription = chan.subscribe('/queue/test', function(error, message) {
                 subscription.cancel();
             });
             
@@ -291,7 +291,7 @@ describe('Channel', function() {
     describe('#begin', function() {
         
         it('should return a transaction object with send, commit and abort methods', function() {
-            var transaction = msging.begin();
+            var transaction = chan.begin();
             assert(typeof transaction.send === 'function');
             assert(typeof transaction.commit === 'function');
             assert(typeof transaction.abort === 'function');
@@ -350,7 +350,7 @@ describe('Channel', function() {
                     checkDone();
                 });
                 
-                var transaction = msging.begin();
+                var transaction = chan.begin();
                 
                 transaction
                  .send('/queue/test/', 'message1')
