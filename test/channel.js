@@ -43,6 +43,10 @@ describe('Channel', function() {
             server1.setCommandHandler('SUBSCRIBE', function() {
                 server1.destroy(); 
             });
+            
+            server1.setCommandHandler('BEGIN', function() {
+                server1.destroy(); 
+            });
         });
         
         server1._disconnect = function(frame, beforeSendResponse){
