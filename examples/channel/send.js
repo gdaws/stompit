@@ -38,7 +38,7 @@ connections.on('error', function(error) {
 
 // Create channel and send message
 
-var channel = new stompit.ChannelPool(connections);
+var channel = new stompit.ChannelFactory(connections);
 
 var headers = {
   'destination': '/queue/test',

@@ -27,7 +27,7 @@ var connections = new stompit.ConnectFailover([
   }
 ]);
 
-var channel = new stompit.ChannelPool(connections);
+var channel = new stompit.ChannelFactory(connections);
 
 channel.send('/queue/a', 'hello', function(error) {
   
