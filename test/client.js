@@ -587,6 +587,79 @@ describe('Client', function() {
                         });
                     });
                 });
+
+                it('should not dispatch the message listener after unsubscribe', function(done) {
+                    
+                    server._subscribe = function(frame, beforeSendResponse) {
+                        
+                        var id = frame.headers.id;
+                        
+                        beforeSendResponse();
+                        
+                        server.sendFrame('MESSAGE', {
+                            'subscription': id,
+                            'message-id': 1,
+                            'destination': '/test',
+                            'content-type': 'text/plain'
+                        }).end('hello');
+                        
+                        server.sendFrame('MESSAGE', {
+                            'subscription': id,
+                            'message-id': 2,
+                            'destination': '/test',
+                            'content-type': 'text/plain'
+                        }).end('hello');
+                        
+                        server.sendFrame('MESSAGE', {
+                            'subscription': id,
+                            'message-id': 3,
+                            'destination': '/test',
+                            'content-type': 'text/plain'
+                        }).end('hello');
+                    };
+                    
+                    server._unsubscribe = function(frame, beforeSendResponse) {
+                        beforeSendResponse();
+                    };
+                    
+                    server._disconnect = function(frame, beforeSendResponse) {
+                        beforeSendResponse();
+                    };
+                    
+                    client.connect('localhost', function() {
+                        
+                        var headers = {
+                            destination: '/test', 
+                            ack:'auto'
+                        };
+                        
+                        var numMessages = 0;
+                        
+                        var subscription = client.subscribe(headers, function(error, message) {
+                            
+                            assert(!error);
+                            assert(message);
+                            
+                            numMessages += 1;
+                            
+                            assert(numMessages === 1);
+                            
+                            message.readString('utf8', function(error) {
+                                
+                                assert(!error);
+                                
+                                message.ack();
+                                
+                                subscription.unsubscribe();
+                                
+                                client.disconnect(function(error){
+                                    assert(!error);
+                                    done(); 
+                                });
+                            });
+                        });
+                    });
+                });
             });
             
         });
