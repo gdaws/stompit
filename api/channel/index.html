@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+
+        <title>Stompit Manual</title>
+
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="../..">Stompit Manual</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li >
+                    <a rel="next" href="../channel-factory/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../client/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/gdaws/node-stomp">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#channel-api">Channel API</a></li>
+        
+            <li><a href="#new-stompitchannelconnectfailover-options">new stompit.Channel(connectFailover, [options])</a></li>
+        
+            <li><a href="#channelsendheaders-body-callback">channel.send(headers, body, [callback])</a></li>
+        
+            <li><a href="#channelsubscribeheaders-onmessagecallback">channel.subscribe(headers, onMessageCallback)</a></li>
+        
+            <li><a href="#channelbeginheaders">channel.begin([headers])</a></li>
+        
+            <li><a href="#channelclose">channel.close()</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="channel-api">Channel API</h1>
+<h2 id="new-stompitchannelconnectfailover-options">new stompit.Channel(connectFailover, [options])</h2>
+<p>Create a new channel. The <code>connectFailover</code> argument is a 
+<a href="../connect-failover/">ConnectFailover</a> object.</p>
+<p>Option defaults:</p>
+<pre class="prettyprint well"><code class="js">{
+    alwaysConnected: false
+}
+</code></pre>
+
+<p>The <code>alwaysConnected</code> option controls how connections are used. Set <code>false</code> 
+value to use on-demand mode where a connection is maintained while there are
+running operations (e.g. messages being sent and/or subscriptions open), and
+the connection is dropped as soon as the last operation completes. Set <code>true</code>
+value for the channel to always have a connection open.</p>
+<h2 id="channelsendheaders-body-callback">channel.send(headers, body, [callback])</h2>
+<p>Send a message.</p>
+<p>The <code>body</code> argument can be either a string, buffer or a function that returns a
+new and unused <code>stream.Readable</code> object. The body function may be called 
+multiple times, for the original transmission and for each re-transmission.</p>
+<p>The <code>callback</code> argument is optional but its use is recommended. Although the
+channel is fault tolerant there's no guarantee</p>
+<h2 id="channelsubscribeheaders-onmessagecallback">channel.subscribe(headers, onMessageCallback)</h2>
+<p>Subscribe to consume messages.</p>
+<h3 id="subscriptionunsubscribe">subscription.unsubscribe()</h3>
+<h2 id="channelbeginheaders">channel.begin([headers])</h2>
+<p>Start a transaction.</p>
+<h3 id="transactionsendheaders-body">transaction.send(headers, body)</h3>
+<h3 id="transactioncommit">transaction.commit()</h3>
+<h3 id="transactionabort">transaction.abort()</h3>
+<h2 id="channelclose">channel.close()</h2>
+<p>Cancels all current operations. The underlying client is disconnected, even if
+the channel is in <code>alwaysConnected</code> mode.</p>
+</div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../../js/prettify-1.0.min.js"></script>
+        <script src="../../js/base.js"></script>
+    </body>
+</html>
