@@ -119,6 +119,6 @@ stomp-consume "failover:(localhost:61613)" /queue/a
   * transaction.abort()
 * channel.close()
 
-## Documentation
-
-* [API documentation](http://gdaws.github.io/node-stomp/api/)
+* API reference
+    * [Client API](http://gdaws.github.io/node-stomp/api/client/)
+    * [Channel API](http://gdaws.github.io/node-stomp/api/channel/)
