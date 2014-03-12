@@ -8,7 +8,8 @@ var servers = [
     port: 61613,
     timeout: 3000,
     connectHeaders:{
-      host: 'mybroker'
+      'host': 'mybroker',
+      'heart-beat': '100,100'
     }
   }
 ];
@@ -61,7 +62,15 @@ channel.subscribe(headers, function(error, message, subscription){
     
     console.log('receive message: ' + string);
     
-    message.ack();
+    message.ack(function(error) {
+      
+      if (error) {
+        console.log('ack error:' + error.message);
+        return;
+      }
+      
+      console.log('message acknowledged');
+    });
     
     // We only want to consume one message so we unsubscribe now  
     subscription.unsubscribe();
