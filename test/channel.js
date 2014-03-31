@@ -61,6 +61,7 @@ describe('Channel', function() {
             createConnector(server1.getTransportSocket()),
             createConnector(server2.getTransportSocket())
         ], {
+            maxReconnectAttempts: 2,
             randomize: false
         });
         
