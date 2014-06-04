@@ -4,8 +4,8 @@
  * MIT licensed
  */
 
-var BufferReadWritable  = require('../../../lib/util/buffer/readwritable');
-var BufferWritable      = require('../../../lib/util/buffer/writable');
+var BufferReadWritable  = require('../../../lib/util/buffer/BufferReadWritable');
+var BufferWritable      = require('../../../lib/util/buffer/BufferWritable');
 var assert              = require('assert');
 
 describe('BufferReadWritable', function(){

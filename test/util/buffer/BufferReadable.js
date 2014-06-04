@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var BufferReadable  = require('../../../lib/util/buffer/readable');
+var BufferReadable  = require('../../../lib/util/buffer/BufferReadable');
 var stream          = require('stream');
 var assert          = require('assert');
 

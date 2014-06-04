@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var MemorySocket    = require('../../lib/util/memory_socket');
+var MemorySocket    = require('../../lib/util/MemorySocket');
 var assert          = require('assert');
 var stream          = require('stream');
 

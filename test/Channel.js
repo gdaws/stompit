@@ -4,13 +4,13 @@
  * MIT licensed
  */
 
-var Channel         = require('../lib/channel');
-var ConnectFailover = require('../lib/connect_failover');
-var MemorySocket    = require('../lib/util/memory_socket');
-var BufferWritable  = require('../lib/util/buffer/writable');
-var BufferReadable  = require('../lib/util/buffer/readable');
-var Client          = require('../lib/client');
-var Server          = require('../lib/server');
+var Channel         = require('../lib/Channel');
+var ConnectFailover = require('../lib/ConnectFailover');
+var MemorySocket    = require('../lib/util/MemorySocket');
+var BufferWritable  = require('../lib/util/buffer/BufferWritable');
+var BufferReadable  = require('../lib/util/buffer/BufferReadable');
+var Client          = require('../lib/Client');
+var Server          = require('../lib/Server');
 var assert          = require('assert');
 
 var createConnector = function(serverSocket) {

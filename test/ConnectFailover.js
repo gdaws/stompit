@@ -4,10 +4,10 @@
  * MIT licensed
  */
 
-var ConnectFailover = require('../lib/connect_failover');
+var ConnectFailover = require('../lib/ConnectFailover');
 var util            = require('../lib/util');
-var MemorySocket    = require('../lib/util/memory_socket');
-var Server          = require('../lib/server');
+var MemorySocket    = require('../lib/util/MemorySocket');
+var Server          = require('../lib/Server');
 var assert          = require('assert');
 
 var createConnector = function(name, accept) {

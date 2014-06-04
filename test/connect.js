@@ -9,8 +9,8 @@ var tls         = require('tls');
 var fs          = require('fs');
 var path        = require('path');
 var connect     = require('../lib/connect');
-var Client      = require('../lib/client');
-var Server      = require('../lib/server');
+var Client      = require('../lib/Client');
+var Server      = require('../lib/Server');
 var assert      = require('assert');
 
 var startServer = function(listener){

@@ -2,16 +2,16 @@
 
 module.exports = {
   
-  IncomingFrameStream:  require('./lib/incoming_frame_stream'),
-  OutgoingFrameStream:  require('./lib/outgoing_frame_stream'),
+  IncomingFrameStream:  require('./lib/IncomingFrameStream'),
+  OutgoingFrameStream:  require('./lib/OutgoingFrameStream'),
   
-  Client:               require('./lib/client'),
+  Client:               require('./lib/Client'),
   
   connect:              require('./lib/connect'),
-  ConnectFailover:      require('./lib/connect_failover'),
+  ConnectFailover:      require('./lib/ConnectFailover'),
   
-  Channel:              require('./lib/channel'),
-  ChannelFactory:       require('./lib/channel_factory'),
-  ChannelPool:          require('./lib/channel_pool'),
-  broker:               require('./lib/channel_pool')
+  Channel:              require('./lib/Channel'),
+  ChannelFactory:       require('./lib/ChannelFactory'),
+  ChannelPool:          require('./lib/ChannelPool'),
+  broker:               require('./lib/ChanellPool')
 };

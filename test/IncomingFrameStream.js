@@ -4,9 +4,9 @@
  * MIT licensed
  */
  
-var IncomingFrameStream = require('../lib/incoming_frame_stream');
-var BufferWritable      = require('../lib/util/buffer/writable');
-var NullWritable        = require('../lib/util/nullwritable');
+var IncomingFrameStream = require('../lib/IncomingFrameStream');
+var BufferWritable      = require('../lib/util/buffer/BufferWritable');
+var NullWritable        = require('../lib/util/NullWritable');
 var net                 = require('net');
 var crypto              = require('crypto');
 var assert              = require('assert');

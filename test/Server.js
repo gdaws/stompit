@@ -4,10 +4,10 @@
  * MIT licensed
  */
 
-var Client          = require('../lib/client');
-var Server          = require('../lib/server');
-var MemorySocket    = require('../lib/util/memory_socket');
-var BufferWritable  = require('../lib/util/buffer/writable');
+var Client          = require('../lib/Client');
+var Server          = require('../lib/Server');
+var MemorySocket    = require('../lib/util/MemorySocket');
+var BufferWritable  = require('../lib/util/buffer/BufferWritable');
 var assert          = require('assert');
 
 var fail = function(){assert(false);};
