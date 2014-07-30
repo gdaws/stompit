@@ -243,3 +243,63 @@ describe('connect', function(){
         });
     });
 });
+
+describe('connect.normalizeConnectArgs', function() {
+    
+    it('normalize (path, [connectListner])', function(){
+        
+        var cb = function(){};
+        
+        var args = connect.normalizeConnectArgs(['/foo.sock', cb]);
+        
+        assert.equal(args[0].path, '/foo.sock');
+        assert.equal(args[0].host, void 0);
+        assert.equal(args[0].port, void 0);
+        assert.equal(args[1], cb);
+        
+        args = connect.normalizeConnectArgs(['/foo.sock']);
+        
+        assert.equal(args[0].path, '/foo.sock');
+        assert.equal(args[0].host, void 0);
+        assert.equal(args[0].port, void 0);
+        assert.equal(args[1], void 0);
+    });
+    
+    it('normalize (port, [connectListner])', function(){
+        
+        var cb = function(){};
+        
+        var args = connect.normalizeConnectArgs(['123', cb]);
+        
+        assert.equal(args[0].path, void 0);
+        assert.equal(args[0].host, 'localhost');
+        assert.equal(args[0].port, 123);
+        assert.equal(args[1], cb);
+        
+        args = connect.normalizeConnectArgs([65534]);
+        
+        assert.equal(args[0].path, void 0);
+        assert.equal(args[0].host, 'localhost');
+        assert.equal(args[0].port, 65534);
+        assert.equal(args[1], void 0);
+    });
+    
+    it('normalize (port, host, [connectListner])', function(){
+        
+        var cb = function(){};
+        
+        var args = connect.normalizeConnectArgs(['123', 'example.com', cb]);
+        
+        assert.equal(args[0].path, void 0);
+        assert.equal(args[0].host, 'example.com');
+        assert.equal(args[0].port, 123);
+        assert.equal(args[1], cb);
+        
+        args = connect.normalizeConnectArgs([65300, 'example.com']);
+        
+        assert.equal(args[0].path, void 0);
+        assert.equal(args[0].host, 'example.com');
+        assert.equal(args[0].port, 65300);
+        assert.equal(args[1], void 0);
+    });
+});
