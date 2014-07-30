@@ -198,3 +198,48 @@ describe('connect(port, [host], [connectListener])', function(){
     });
 });
 
+describe('connect', function(){
+    
+    it('throw error on zero arguments', function() {
+        assert.throws(function(){
+            
+            connect();
+            
+        }, function(error){
+            return error.message == 'no connect arguments';
+        });
+    });
+    
+    it('throw error on invalid port/path argument', function() {
+        
+        assert.throws(function(){
+            
+            connect(function(){});
+            
+        }, function(error){
+            return error.message === 'invalid connect argument (expected port or path value)';
+        });
+    });
+    
+    it('throw on invalid connectListener argument', function() {
+        
+        assert.throws(function(){
+            
+            connect(61613, 'localhost', 'not_a_function');
+            
+        }, function(error){
+            return error.message == 'invalid connect argument ' +  
+                '(expected connectListener argument to be a function)';
+        });
+    });
+    
+    it('throw on too many arguments', function() {
+        assert.throws(function(){
+            
+            connect(61613, 'localhost', function(){}, true);
+            
+        }, function(error){
+            return error.message == 'too many arguments';
+        });
+    });
+});
