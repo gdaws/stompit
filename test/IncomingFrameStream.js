@@ -3,8 +3,8 @@
  * Copyright (c) 2014 Graham Daws <graham.daws@gmail.com>
  * MIT licensed
  */
- 
-var IncomingFrameStream = require('../lib/IncomingFrameStream');
+
+var IncomingFrameStream = require('../index').IncomingFrameStream;
 var BufferWritable      = require('../lib/util/buffer/BufferWritable');
 var NullWritable        = require('../lib/util/NullWritable');
 var net                 = require('net');
