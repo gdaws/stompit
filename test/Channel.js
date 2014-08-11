@@ -4,12 +4,12 @@
  * MIT licensed
  */
 
-var Channel         = require('../lib/Channel');
-var ConnectFailover = require('../lib/ConnectFailover');
+var Channel         = require('../index').Channel;
+var ConnectFailover = require('../index').ConnectFailover;
+var  Client         = require('../index').Client;
 var MemorySocket    = require('../lib/util/MemorySocket');
 var BufferWritable  = require('../lib/util/buffer/BufferWritable');
 var BufferReadable  = require('../lib/util/buffer/BufferReadable');
-var Client          = require('../lib/Client');
 var Server          = require('../lib/Server');
 var assert          = require('assert');
 

@@ -13,5 +13,5 @@ module.exports = {
   Channel:              require('./lib/Channel'),
   ChannelFactory:       require('./lib/ChannelFactory'),
   ChannelPool:          require('./lib/ChannelPool'),
-  broker:               require('./lib/ChanellPool')
+  broker:               require('./lib/ChannelPool')
 };

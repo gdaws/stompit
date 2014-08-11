@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var Client          = require('../lib/Client');
+var  Client         = require('../index').Client;
 var Server          = require('../lib/Server');
 var MemorySocket    = require('../lib/util/MemorySocket');
 var BufferWritable  = require('../lib/util/buffer/BufferWritable');
