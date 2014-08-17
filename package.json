@@ -1,7 +1,7 @@
 {
   "name": "stompit",
   "description": "STOMP client library for node.js",
-  "version": "0.18.3",
+  "version": "0.19.0",
   "keywords": [
     "stomp", "messaging"
   ],
@@ -19,7 +19,6 @@
     "node" : ">=0.10"
   },
   "dependencies": {
-    "optimist": "~0.6.0",
     "qs": "~0.6.5"
   },
   "devDependencies": {

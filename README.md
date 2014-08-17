@@ -60,15 +60,6 @@ channel.subscribe('/queue/a', function(error, message) {
 });
 ```
 
-Command-line application usage:
-```
-echo "hello" | stomp-publish "failover:(localhost:61613)" -H "content-type: text/plain" /queue/a
-```
-
-```
-stomp-consume "failover:(localhost:61613)" /queue/a
-```
-
 ## Install
 
  `npm install stompit`
