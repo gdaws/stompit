@@ -10,34 +10,52 @@ var MemorySocket    = require('../lib/util/MemorySocket');
 var Server          = require('../lib/Server');
 var assert          = require('assert');
 
-var createConnector = function(name, accept) {
-    return {
+var createConnector = function(name, options) {
+    
+    options = options || {};
+    
+    var connector = {
         name: name,
-        connect: function(options, callback) {
-            
-            var serverSocket = new MemorySocket();
-            var server = new Server(serverSocket);
-            
-            var socket = serverSocket.getPeerSocket();
-            socket.connectOptions = options;
-            
-            var error;
-            if (accept) {
-                error = accept();
-            }
-            
-            process.nextTick(function() {
-                if (error) {
-                    socket.emit('error', error);
-                }
-                else {
-                    callback();
-                }
-            });
-            
-            return socket;
-        }
+        connects: 0,
+        connectAfter: options.connectAfter || 0,
+        isTransportError: true,
+        failAfter: options.failAfter || Infinity
     };
+    
+    var connect = function(options, callback) {
+        
+        connector.connects += 1;
+        
+        var serverSocket = new MemorySocket();
+        var server = new Server(serverSocket);
+        
+        var socket = serverSocket.getPeerSocket();
+        socket.connectOptions = options;
+        
+        var error;
+        
+        if (connector.connects < connector.connectAfter || 
+            connector.connects >= connector.failAfter) {
+        
+            var error = new Error('unable to connect');
+            error.isTransportError = connector.isTransportError;
+        }
+        
+        process.nextTick(function() {
+            if (error) {
+                socket.emit('error', error);
+            }
+            else {
+                callback();
+            }
+        });
+        
+        return socket;
+    };
+    
+    connector.connect = connect;
+    
+    return connector;
 };
 
 var getConnectorName = function(client) {
@@ -45,12 +63,9 @@ var getConnectorName = function(client) {
 };
 
 var createBrokenConnector = function(connectAfterFailedAttempts) {
-    var fails = 0;
-    return createConnector(null, function() {
-        fails += 1;
-        if (fails < connectAfterFailedAttempts) {
-            return new Error('unable to connect');
-        }
+    
+    return createConnector(null, {
+        connectAfter: connectAfterFailedAttempts
     });
 };
 
@@ -127,38 +142,46 @@ describe('ConnectFailover', function() {
             });
         });
         
-        it('should stop reconnecting after 3 successful re-connects', function(done) {
+        it('should stop reconnecting after 3 failed connects for each server', function(done) {
             
-            var failover = new ConnectFailover([
-                createConnector(),
-                createConnector(),
-            ], util.extend(defaultOptions, {
-                maxReconnects: 3
+            var servers = [
+            
+                createConnector(1, {
+                    connectAfter: Infinity
+                }),
+                
+                createConnector(2, {
+                    connectAfter: Infinity
+                })
+            ];
+            
+            var failover = new ConnectFailover(servers, util.extend(defaultOptions, {
+                maxReconnects: 3,
+                useExponentialBackOff: false,
+                initialReconnectDelay: 1
             }));
             
             var connects = 0;
             
             failover.connect(function(error, client, reconnect) {
                 
-                connects += 1;
+                assert(error);
                 
-                if (connects === 5) {
-                    assert(error);
-                    done();
-                    return;
-                }
+                assert.equal(servers[0].connects, 3);
+                assert.equal(servers[1].connects, 3);
                 
-                assert(!error);
-                reconnect();
+                done();
             });
         });
         
-        it('should connect after any number of failed attempts', function(done) {
+        it('should connect after 8 failed attempts', function(done) {
             
             var failover = new ConnectFailover([
-                createBrokenConnector(8)
+                createConnector(null, {
+                    connectAfter: 8
+                })
             ], util.extend(defaultOptions, {
-                maxReconnectAttempts: -1,
+                maxReconnects: -1,
                 initialReconnectDelay: 1,
                 useExponentialBackOff: false
             }));
@@ -172,11 +195,30 @@ describe('ConnectFailover', function() {
         it('should give up trying to connect after a number of failed attempts', function(done) {
             
             var failover = new ConnectFailover([
-                createBrokenConnector(8)
+                createConnector(null, {
+                    connectAfter: Infinity
+                })
             ], util.extend(defaultOptions, {
-                maxReconnectAttempts: 2,
+                maxReconnects: 2,
                 initialReconnectDelay: 1,
                 useExponentialBackOff: false
+            }));
+            
+            failover.connect(function(error, client) {
+                assert(error);
+                done();
+            });
+        });
+        
+        it('should give up on application connect error', function(done) {
+            
+            var failover = new ConnectFailover([
+                createConnector(null, {
+                    connectAfter: Infinity,
+                    isTransportError: false
+                })
+            ], util.extend(defaultOptions, {
+                maxReconnects: -1
             }));
             
             failover.connect(function(error, client) {
