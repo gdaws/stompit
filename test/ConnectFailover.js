@@ -18,7 +18,7 @@ var createConnector = function(name, options) {
         name: name,
         connects: 0,
         connectAfter: options.connectAfter || 0,
-        isTransportError: true,
+        connectError: options.connectError,
         failAfter: options.failAfter || Infinity
     };
     
@@ -29,6 +29,13 @@ var createConnector = function(name, options) {
         var serverSocket = new MemorySocket();
         var server = new Server(serverSocket);
         
+        if (options.connectError) {
+            server.setCommandHandler("CONNECT", function() {
+                server.sendError(options.connectError).end();
+            });
+            server.on('error', function(){});
+        }
+        
         var socket = serverSocket.getPeerSocket();
         socket.connectOptions = options;
         
@@ -37,8 +44,7 @@ var createConnector = function(name, options) {
         if (connector.connects < connector.connectAfter || 
             connector.connects >= connector.failAfter) {
         
-            var error = new Error('unable to connect');
-            error.isTransportError = connector.isTransportError;
+            error = new Error('unable to connect');
         }
         
         process.nextTick(function() {
@@ -214,8 +220,7 @@ describe('ConnectFailover', function() {
             
             var failover = new ConnectFailover([
                 createConnector(null, {
-                    connectAfter: Infinity,
-                    isTransportError: false
+                    connectError: 'invalid login'
                 })
             ], util.extend(defaultOptions, {
                 maxReconnects: -1
