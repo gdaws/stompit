@@ -2,32 +2,27 @@
 
 A STOMP client library for node.js compatible with STOMP 1.0, 1.1 and 1.2 servers.
 
-Stompit is also a command-line application for publishing and consuming messages 
-with a broker.
-
-Library features include:
+Features:
 * **Transport agnostic** - the client api supports any transport implementing the Stream.Duplex interface;
 * **Frame body streaming** - your application is in direct control of reading and writing frame body data;
 * **High-level Channel API** - messages being sent and subscriptions are maintained after connection interruptions;
 * **Low-level Client API** - socket-like interface with manual connection management and error handling.
 
-Example usage of Stompit's Channel API:
+Example usage of the Channel API:
 ```javascript
 var stompit = require('stompit');
 
-var connections = new stompit.ConnectFailover([
-  {
-    host: '172.17.0.2', 
-    port: 61613, 
-    connectHeaders:{
-      host: '/',
-      login: 'username',
-      passcode: 'password'
-    }
+var connectionManager = new stompit.ConnectFailover([{
+  host: '127.0.0.1', 
+  port: 61613, 
+  connectHeaders:{
+    host: '/',
+    login: 'username',
+    passcode: 'password'
   }
-]);
+}]);
 
-var channel = new stompit.ChannelFactory(connections);
+var channel = new stompit.ChannelFactory(connectionManager);
 
 channel.send('/queue/a', 'hello', function(error) {
   
@@ -76,6 +71,9 @@ channel.subscribe('/queue/a', function(error, message) {
 * client.destroy([error])
 * client.send(headers, [options])
 * client.sendFrame(command, headers, [options])
+* Event: 'connect'
+* Event: 'end'
+* Event: 'error'
 
 ### Subscription
 
@@ -98,9 +96,13 @@ channel.subscribe('/queue/a', function(error, message) {
 
 * new stompit.ConnectFailover(servers, [options])
 * failover.connect(connectCallback)
-* connectCallback(error, reconnect)
+  * connectCallback(error, reconnect)
+* Event: 'connecting'
+* Event: 'connect'
+* Event: 'error'
 
 ## Channel
+
 * new stompit.Channel(connectFailover, [options])
 * channel.send(headers, body, [callback])
 * channel.subscribe(headers, onMessageCallback)
@@ -108,7 +110,16 @@ channel.subscribe('/queue/a', function(error, message) {
   * transaction.send(headers, body)
   * transaction.commit([callback])
   * transaction.abort()
-* channel.close()
+* channel.close(error)
+* Event: 'idle'
+
+## Channel Pool
+
+* new stompit.ChannelPool(connectFailover, [options])
+* channelpool.channel(callback)
+* channelpool.send(headers, body, [callback])
+* channelpool.subscribe(headers, onMessageCallback)
+  * onMessageCallback(error, message, subscription)
 
 ## Documentation
 
