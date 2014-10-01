@@ -6,7 +6,7 @@
 
 var Channel         = require('../index').Channel;
 var ConnectFailover = require('../index').ConnectFailover;
-var  Client         = require('../index').Client;
+var Client          = require('../index').Client;
 var MemorySocket    = require('../lib/util/MemorySocket');
 var BufferWritable  = require('../lib/util/buffer/BufferWritable');
 var BufferReadable  = require('../lib/util/buffer/BufferReadable');
@@ -265,7 +265,7 @@ describe('Channel', function() {
             });
         });
 
-        it('should return an object with a working cancel method', function(done) {
+        it('should return an object with a cancel method', function(done) {
             
             server2.on('connection', function() {
                 
@@ -275,13 +275,16 @@ describe('Channel', function() {
                     
                     subscriptionId = frame.headers.id;
                     
-                    beforeSendResponse();
-                    
-                    process.nextTick(function() {
-                        server2.sendFrame('MESSAGE', {
-                            'subscription':subscriptionId, 
-                            'message-id': 1
-                        }).end('message1');
+                    server2.readEmptyBody(frame, function() {
+                        
+                        beforeSendResponse();
+                        
+                        process.nextTick(function() {
+                            server2.sendFrame('MESSAGE', {
+                                'subscription': subscriptionId, 
+                                'message-id': 1
+                            }).end('message1');
+                        });
                     });
                 });
                 
@@ -292,7 +295,9 @@ describe('Channel', function() {
             });
             
             var subscription = chan.subscribe('/queue/test', function(error, message) {
-                subscription.cancel();
+                message.readString('utf8', function() {
+                    subscription.cancel();
+                });
             });
             
             assert(typeof subscription.cancel === 'function');
@@ -335,24 +340,29 @@ describe('Channel', function() {
                     
                     server2.setCommandHandler('BEGIN', function(frame, beforeSendResponse) {
                         
-                        countBegins += 1;
+                        server2.readEmptyBody(frame, function() {
+                            
+                            countBegins += 1;
                         
-                        assert(countBegins === 1);
-                        
-                        server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
-                            countSends += 1;
-                            var writable = new BufferWritable(new Buffer(26));
-                            frame.pipe(writable);
+                            assert(countBegins === 1);
+                            
+                            server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
+                                countSends += 1;
+                                var writable = new BufferWritable(new Buffer(26));
+                                frame.pipe(writable);
+                                beforeSendResponse();
+                            });
+                            
+                            server2.setCommandHandler('COMMIT', function(frame, beforeSendResponse) {
+                                server2.readEmptyBody(frame, function() {
+                                    assert(countSends === 3);
+                                    gotCommit = true;
+                                    beforeSendResponse();
+                                });
+                            });
+                            
                             beforeSendResponse();
                         });
-                        
-                        server2.setCommandHandler('COMMIT', function(frame, beforeSendResponse) {
-                            assert(countSends === 3);
-                            gotCommit = true;
-                            beforeSendResponse();
-                        });
-                        
-                        beforeSendResponse();
                     });
                 });
 
