@@ -19,7 +19,8 @@
     "node" : ">=0.10"
   },
   "dependencies": {
-    "qs": "~0.6.5"
+    "qs": "~0.6.5",
+    "object-assign": "^2.0.0"
   },
   "devDependencies": {
     "mocha" : "^1.21.3",
