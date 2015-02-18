@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-        <title>Stompit Manual</title>
+        <title>Class: stompit.Client - Stompit Manual</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -21,8 +21,6 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
-
-        
 
         
     </head>
@@ -51,13 +49,46 @@
             <!-- Main navigation -->
             <ul class="nav navbar-nav">
             
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">stompit module api <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../">Index</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../connect/">Function: stompit.connect</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="./">Class: stompit.Client</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../connect-failover/">Class: stompit.ConnectFailover</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../channel-pool/">Class: stompit.ChannelPool</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../channel/">Class: stompit.Channel</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
             </ul>
 
             <!-- Search, Navigation and Repo links -->
             <ul class="nav navbar-nav navbar-right">
                 
                 <li >
-                    <a rel="next" href="../channel/">
+                    <a rel="next" href="../connect/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
@@ -85,7 +116,7 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#client-api">Client API</a></li>
+        <li class="main active"><a href="#class-stompitclient">Class: stompit.Client</a></li>
         
             <li><a href="#new-stompitclienttransport-options">new stompit.Client(transport, [options])</a></li>
         
@@ -108,39 +139,39 @@
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="client-api">Client API</h1>
+<h1 id="class-stompitclient">Class: stompit.Client</h1>
 <hr />
 <h2 id="new-stompitclienttransport-options">new stompit.Client(transport, [options])</h2>
 <p>The transport parameter expects a <code>stream.Duplex</code> object argument. The transport 
 must be in a connecting or connected state.</p>
-<p>Option defaults:</p>
-<pre class="prettyprint well"><code class="js">{
-    heartbeat: [0, 0],
-    heartbeatDelayMargin: 100
-}
-</code></pre>
-
+<p>The constructor is useful if you're using a custom transport such a transform
+stream. However, if you are using any of the standard transports then you should
+avoid using the constructor and instead use the much more convenient 
+<a href="/api/connect/">stompit.connect</a> function to instantiate a stompit.Client object and establish
+a connection.</p>
+<p>Options:</p>
 <ul>
 <li>
-<p><code>heartbeat</code> <code>Array</code>: Set the preferred heart beat timings, in milliseconds. 
-The first element is the send frequency. The Client class will try to ensure the 
-send frequency is reached by sending frame trailer bytes if the application is 
-not creating busy enough traffic. The second element is the expected receive 
-frequency; i.e. the client expects to see an increase in the number of bytes 
-received on the socket every n milliseconds).</p>
+<p><code>heartbeat</code> <code>Array</code> <code>Default:[0,0]</code>: Set the preferred heart beat timings, in 
+milliseconds. The first element is the send frequency. The Client class will try 
+to ensure the send frequency is reached by sending frame trailer bytes if the 
+application is not creating busy enough traffic. The second element is the 
+expected receive frequency; i.e. the client expects to see an increase in the 
+number of bytes received on the socket every n milliseconds).</p>
 </li>
 <li>
-<p><code>heartbeatDelayMargin</code> <code>Number</code>: Milliseconds added to the the heart-beat 
-receive frequency to account for network delay.</p>
+<p><code>heartbeatDelayMargin</code> <code>Number</code> <code>Default:100</code>: Milliseconds added to the
+heart-beat receive frequency to allow for delay variations.</p>
 </li>
 </ul>
 <h2 id="clientconnectheaders-callback">client.connect(headers, [callback])</h2>
-<p>Send CONNECT frame to the server.</p>
+<p>Send a CONNECT frame to the server.</p>
 <p>If a callback function argument is given then it will be called on connect
 event.</p>
+<p>Note: you must not call this method if you used stompit.connect function.</p>
 <h2 id="clientdisconnectcallback">client.disconnect([callback])</h2>
 <p>Disconnect from server. A DISCONNECT frame is sent with a receipt request. No
-further transmissions are permitted while disconnect is in progress. The server
+further transmissions are permitted while the disconnect is pending. The server
 should reply with a disconnect receipt and end the connection once all messages 
 sent from the client are acknowledged.</p>
 <p>The <code>callback</code> function is called when the connection is closed or when an
@@ -213,12 +244,6 @@ object.</p>
 <p>Abort the transaction. An ABORT frame is sent to the server.</p>
 </div>
         </div>
-
-        <footer class="col-md-12">
-            <hr>
-            
-            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
 
         
 

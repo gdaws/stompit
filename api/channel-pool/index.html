@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-        <title>Class: stompit.Channel - Stompit Manual</title>
+        <title>Class: stompit.ChannelPool - Stompit Manual</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -70,12 +70,12 @@
                             <a href="../connect-failover/">Class: stompit.ConnectFailover</a>
                         </li>
                     
-                        <li >
-                            <a href="../channel-pool/">Class: stompit.ChannelPool</a>
+                        <li class="active">
+                            <a href="./">Class: stompit.ChannelPool</a>
                         </li>
                     
-                        <li class="active">
-                            <a href="./">Class: stompit.Channel</a>
+                        <li >
+                            <a href="../channel/">Class: stompit.Channel</a>
                         </li>
                     
                     </ul>
@@ -88,12 +88,12 @@
             <ul class="nav navbar-nav navbar-right">
                 
                 <li >
-                    <a rel="next" href="../channel-pool/">
+                    <a rel="next" href="../connect-failover/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
-                <li class="disabled">
-                    <a rel="prev" >
+                <li >
+                    <a rel="prev" href="../channel/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -118,16 +118,6 @@
     
         <li class="main active"><a href="#class-stompitchannel">Class: stompit.Channel</a></li>
         
-            <li><a href="#new-stompitchannelconnectfailover-options">new stompit.Channel(connectFailover, [options])</a></li>
-        
-            <li><a href="#channelsendheaders-body-callback">channel.send(headers, body, [callback])</a></li>
-        
-            <li><a href="#channelsubscribeheaders-onmessagecallback">channel.subscribe(headers, onMessageCallback)</a></li>
-        
-            <li><a href="#channelbeginheaders">channel.begin([headers])</a></li>
-        
-            <li><a href="#channelclose">channel.close()</a></li>
-        
     
     </ul>
 </div></div>
@@ -135,36 +125,6 @@
 
 <h1 id="class-stompitchannel">Class: stompit.Channel</h1>
 <hr />
-<h2 id="new-stompitchannelconnectfailover-options">new stompit.Channel(connectFailover, [options])</h2>
-<p>Create a new channel. The <code>connectFailover</code> argument is a 
-<a href="../connect-failover/">ConnectFailover</a> object.</p>
-<p>Option defaults:</p>
-<pre class="prettyprint well"><code class="js">{
-    alwaysConnected: false
-}
-</code></pre>
-
-<p>The <code>alwaysConnected</code> option controls how connections are used. Set <code>false</code> 
-value to use on-demand mode where a connection is maintained while there are
-running operations (e.g. messages being sent and/or subscriptions open), and
-the connection is dropped as soon as the last operation completes. Set <code>true</code>
-value for the channel to always have a connection open.</p>
-<h2 id="channelsendheaders-body-callback">channel.send(headers, body, [callback])</h2>
-<p>Send a message.</p>
-<p>The <code>body</code> argument can be either a string, buffer or a function that returns a
-new and unused <code>stream.Readable</code> object. The body function may be called 
-multiple times, for the original transmission and for each re-transmission.</p>
-<h2 id="channelsubscribeheaders-onmessagecallback">channel.subscribe(headers, onMessageCallback)</h2>
-<p>Subscribe to consume messages.</p>
-<h3 id="subscriptionunsubscribe">subscription.unsubscribe()</h3>
-<h2 id="channelbeginheaders">channel.begin([headers])</h2>
-<p>Start a transaction.</p>
-<h3 id="transactionsendheaders-body">transaction.send(headers, body)</h3>
-<h3 id="transactioncommit">transaction.commit()</h3>
-<h3 id="transactionabort">transaction.abort()</h3>
-<h2 id="channelclose">channel.close()</h2>
-<p>Cancels all current operations. The underlying client is disconnected, even if
-the channel is in <code>alwaysConnected</code> mode.</p>
 </div>
         </div>
 

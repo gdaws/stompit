@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-        <title>Class: stompit.Channel - Stompit Manual</title>
+        <title>Function: stompit.connect - Stompit Manual</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -58,8 +58,8 @@
                             <a href="../">Index</a>
                         </li>
                     
-                        <li >
-                            <a href="../connect/">Function: stompit.connect</a>
+                        <li class="active">
+                            <a href="./">Function: stompit.connect</a>
                         </li>
                     
                         <li >
@@ -74,8 +74,8 @@
                             <a href="../channel-pool/">Class: stompit.ChannelPool</a>
                         </li>
                     
-                        <li class="active">
-                            <a href="./">Class: stompit.Channel</a>
+                        <li >
+                            <a href="../channel/">Class: stompit.Channel</a>
                         </li>
                     
                     </ul>
@@ -88,12 +88,12 @@
             <ul class="nav navbar-nav navbar-right">
                 
                 <li >
-                    <a rel="next" href="../channel-pool/">
+                    <a rel="next" href="../">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
-                <li class="disabled">
-                    <a rel="prev" >
+                <li >
+                    <a rel="prev" href="../client/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -116,55 +116,83 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#class-stompitchannel">Class: stompit.Channel</a></li>
+        <li class="main active"><a href="#function-stompitconnect">Function: stompit.connect</a></li>
         
-            <li><a href="#new-stompitchannelconnectfailover-options">new stompit.Channel(connectFailover, [options])</a></li>
+            <li><a href="#standard-headers">Standard headers</a></li>
         
-            <li><a href="#channelsendheaders-body-callback">channel.send(headers, body, [callback])</a></li>
-        
-            <li><a href="#channelsubscribeheaders-onmessagecallback">channel.subscribe(headers, onMessageCallback)</a></li>
-        
-            <li><a href="#channelbeginheaders">channel.begin([headers])</a></li>
-        
-            <li><a href="#channelclose">channel.close()</a></li>
+            <li><a href="#example">Example</a></li>
         
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="class-stompitchannel">Class: stompit.Channel</h1>
+<h1 id="function-stompitconnect">Function: stompit.connect</h1>
 <hr />
-<h2 id="new-stompitchannelconnectfailover-options">new stompit.Channel(connectFailover, [options])</h2>
-<p>Create a new channel. The <code>connectFailover</code> argument is a 
-<a href="../connect-failover/">ConnectFailover</a> object.</p>
-<p>Option defaults:</p>
-<pre class="prettyprint well"><code class="js">{
-    alwaysConnected: false
-}
+<p>Creates a <a href="/api/client">stompit.Client</a> object and connects to a server. 
+The <code>connectionListener</code> callback (an observer of the client object's <code>connect</code> 
+event) is called when the client is connected and is ready to send and subscribe.</p>
+<p>The return value is a new client object.</p>
+<p>Supported call patterns:</p>
+<ul>
+<li><code>stompit.connect(options, [connectionListener])</code></li>
+<li><code>stompit.connect(port, [host], [connectionListener])</code></li>
+<li><code>stompit.connect(path, [connectionListener])</code></li>
+</ul>
+<p>Options:</p>
+<ul>
+<li><code>host</code> <code>string</code> <code>Default:"localhost"</code> remote host address</li>
+<li><code>port</code> <code>integer</code> <code>Default:61613</code> remote port address</li>
+<li><code>timeout</code> <code>integer</code> <code>Default:3000</code> timeout for the transport connect operation</li>
+<li><code>connectHeaders</code> <code>object</code> <code>Default:{}</code> headers to be sent in the connect frame</li>
+<li><code>path</code> <code>string</code> use unix domain socket and use path as the destination address</li>
+<li><code>ssl</code> <code>boolean</code> <code>Default:false</code> use secure connection</li>
+<li><code>connect</code> <code>function</code> override the transport factory constructor used</li>
+</ul>
+<p>Options available when ssl is set to true:</p>
+<ul>
+<li><code>pfx</code> <code>string or Buffer</code> private key, certificate and CA certs of client in
+  PFX or PKC12 format.</li>
+<li><code>key</code> <code>string or Buffer</code> private key of the client in PEM format</li>
+<li><code>passphrase</code> <code>string</code> passhrase for the private key</li>
+<li><code>cert</code> <code>string or Buffer</code> containing the certificate file of the client in PEM
+  format</li>
+<li><code>ca</code> array of strings of Buffers of trusted certificates in PEM format</li>
+</ul>
+<p>Under the hood <code>net.connect</code> and <code>tls.connect</code> functions are used so any options
+they have available that are undocumented here are also applicable to
+<code>stompit.connect</code> function.</p>
+<h2 id="standard-headers">Standard headers</h2>
+<p>Set the <code>connectHeaders</code> option with an object containing the headers to be
+included in the connect frame. Below are the list of standard headers supported
+by STOMP servers.</p>
+<ul>
+<li><code>accept-version</code> negotiate protocol version. By default stompit accepts 
+  "1.0,1.1,1.2"</li>
+<li><code>heart-beat</code> enable heart-beating. Format of header value: <code>x,y</code> where x and y
+  are the number of milliseconds between heart-beats sent and received 
+  respectively.</li>
+<li><code>host</code> virtual host name of server</li>
+<li><code>login</code> client username</li>
+<li><code>passcode</code> client password</li>
+</ul>
+<h2 id="example">Example</h2>
+<pre class="prettyprint well"><code class="js">var connectOptions = {
+  'host': 'localhost',
+  'port': 61613,
+  'connectHeaders':{
+    'heart-beat': '1000,2000',
+    'host': 'localhost',
+    'login': 'username',
+    'passcode': 'password'
+  }
+};
+
+stompit.connect(connectOptions, function(error, client) {
+
+});
 </code></pre>
 
-<p>The <code>alwaysConnected</code> option controls how connections are used. Set <code>false</code> 
-value to use on-demand mode where a connection is maintained while there are
-running operations (e.g. messages being sent and/or subscriptions open), and
-the connection is dropped as soon as the last operation completes. Set <code>true</code>
-value for the channel to always have a connection open.</p>
-<h2 id="channelsendheaders-body-callback">channel.send(headers, body, [callback])</h2>
-<p>Send a message.</p>
-<p>The <code>body</code> argument can be either a string, buffer or a function that returns a
-new and unused <code>stream.Readable</code> object. The body function may be called 
-multiple times, for the original transmission and for each re-transmission.</p>
-<h2 id="channelsubscribeheaders-onmessagecallback">channel.subscribe(headers, onMessageCallback)</h2>
-<p>Subscribe to consume messages.</p>
-<h3 id="subscriptionunsubscribe">subscription.unsubscribe()</h3>
-<h2 id="channelbeginheaders">channel.begin([headers])</h2>
-<p>Start a transaction.</p>
-<h3 id="transactionsendheaders-body">transaction.send(headers, body)</h3>
-<h3 id="transactioncommit">transaction.commit()</h3>
-<h3 id="transactionabort">transaction.abort()</h3>
-<h2 id="channelclose">channel.close()</h2>
-<p>Cancels all current operations. The underlying client is disconnected, even if
-the channel is in <code>alwaysConnected</code> mode.</p>
 </div>
         </div>
 

@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../../img/favicon.ico">
 
-        <title>Stompit Manual</title>
+        <title>Class: stompit.ConnectFailover - Stompit Manual</title>
 
         <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -21,8 +21,6 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
-
-        
 
         
     </head>
@@ -51,6 +49,39 @@
             <!-- Main navigation -->
             <ul class="nav navbar-nav">
             
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">stompit module api <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../">Index</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../connect/">Function: stompit.connect</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../client/">Class: stompit.Client</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="./">Class: stompit.ConnectFailover</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../channel-pool/">Class: stompit.ChannelPool</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../channel/">Class: stompit.Channel</a>
+                        </li>
+                    
+                    </ul>
+                </li>
+            
+            
             </ul>
 
             <!-- Search, Navigation and Repo links -->
@@ -61,8 +92,8 @@
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
-                <li class="disabled">
-                    <a rel="prev" >
+                <li >
+                    <a rel="prev" href="../channel-pool/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -85,28 +116,103 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#connection-failover">Connection Failover</a></li>
+        <li class="main active"><a href="#class-stompitconnectfailover">Class: stompit.ConnectFailover</a></li>
         
             <li><a href="#new-stompitconnectfailoverservers-options">new stompit.ConnectFailover(servers, [options])</a></li>
         
+            <li><a href="#failoveraddserverserver">failover.addServer(server)</a></li>
+        
             <li><a href="#failoverconnectcallback">failover.connect(callback)</a></li>
+        
+            <li><a href="#example">Example</a></li>
         
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="connection-failover">Connection Failover</h1>
+<h1 id="class-stompitconnectfailover">Class: stompit.ConnectFailover</h1>
+<hr />
+<p>Reconnect management for stompit.Client</p>
 <h2 id="new-stompitconnectfailoverservers-options">new stompit.ConnectFailover(servers, [options])</h2>
+<p>The servers parameter is an array of servers where each element is an object of 
+server settings (the same options used in <a href="/api/connect">stompt.connect</a>).</p>
+<p>Options:</p>
+<ul>
+<li><code>initialReconnectDelay</code> <code>integer</code> <code>Default:10</code> milliseconds delay of the first 
+  reconnect</li>
+<li><code>maxReconnectDelay</code> <code>integer</code> <code>Default:30000</code> maximum milliseconds delay of 
+   any reconnect</li>
+<li><code>useExponentialBackOff</code> <code>boolean</code> <code>Default:true</code> exponential increase
+   in reconnect delay</li>
+<li><code>maxReconnects</code> <code>integer</code> <code>Default:-1</code> maximum number of failed reconnects 
+   consecutively</li>
+<li><code>randomize</code> <code>boolean</code> <code>Default:true</code> randomly choose a server to use when
+  reconnecting</li>
+<li><code>connectFunction</code> <code>function</code> <code>Default:stompit.connect</code> override the client 
+   factory constructor used</li>
+</ul>
+<h2 id="failoveraddserverserver">failover.addServer(server)</h2>
+<p>Append a server to the server list</p>
 <h2 id="failoverconnectcallback">failover.connect(callback)</h2>
+<p>Connect to a server and then callback is called with arguments <code>error, client, reconnect</code>.
+The error argument will be an Error object if the reconnect limit is reached. 
+Reconnect state is not shared between failover.connect calls, each connect
+call tracks its own number of reconnects and uses the limits set in the 
+ConnectFailover object. The client argument is a <a href="/api/client">Client</a> object 
+which is ready to send and subscribe. The reconnect argument is a function to
+reconnect to a server and repeat the callback. You don't reuse the client 
+object between reconnects; for each callback call a new client object is 
+provided.</p>
+<h2 id="example">Example</h2>
+<pre class="prettyprint well"><code class="js">var server1 = {
+  'host': '172.17.42.1',
+  'connectHeaders':{
+    'host': '',
+    'login': '',
+    'passcode' ''
+  }
+};
+
+var server2 = {
+  'host': '172.17.42.2',
+  'connectHeaders':{
+    'heart-beat': '5000,5000'
+    'host': '',
+    'login': '',
+    'passcode' ''
+  }
+};
+
+var servers = [server1, server2];
+
+var reconnectOptions = {
+  'maxReconnects': 10 
+};
+
+var manager = new stompit.ConnectFailover(servers, reconnectOptions);
+
+manager.connect(function(error, client, reconnect) {
+
+  if (error) {
+    // terminal error, given up reconnecting
+    return;
+  }
+
+  client.on('error', function(error) {
+
+    // calling reconnect is optional and you may not want to reconnect if the
+    // same error will be repeated.
+
+    reconnect();
+  });
+
+  // use client
+});
+</code></pre>
+
 </div>
         </div>
-
-        <footer class="col-md-12">
-            <hr>
-            
-            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
 
         
 
