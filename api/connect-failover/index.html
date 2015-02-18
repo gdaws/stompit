@@ -136,7 +136,7 @@
 <p>Reconnect management for stompit.Client</p>
 <h2 id="new-stompitconnectfailoverservers-options">new stompit.ConnectFailover(servers, [options])</h2>
 <p>The servers parameter is an array of servers where each element is an object of 
-server settings (the same options used in <a href="/api/connect">stompt.connect</a>).</p>
+server settings (the same options used in <a href="../connect/">stompt.connect</a>).</p>
 <p>Options:</p>
 <ul>
 <li><code>initialReconnectDelay</code> <code>integer</code> <code>Default:10</code> milliseconds delay of the first 
@@ -159,7 +159,7 @@ server settings (the same options used in <a href="/api/connect">stompt.connect<
 The error argument will be an Error object if the reconnect limit is reached. 
 Reconnect state is not shared between failover.connect calls, each connect
 call tracks its own number of reconnects and uses the limits set in the 
-ConnectFailover object. The client argument is a <a href="/api/client">Client</a> object 
+ConnectFailover object. The client argument is a <a href="../client/">Client</a> object 
 which is ready to send and subscribe. The reconnect argument is a function to
 reconnect to a server and repeat the callback. You don't reuse the client 
 object between reconnects; for each callback call a new client object is 
