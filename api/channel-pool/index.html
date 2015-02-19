@@ -116,15 +116,50 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#class-stompitchannel">Class: stompit.Channel</a></li>
+        <li class="main active"><a href="#class-stompitchannelpool">Class: stompit.ChannelPool</a></li>
+        
+            <li><a href="#new-stompitchannelpoolconnectfailover-options">new stompit.ChannelPool(connectFailover, [options])</a></li>
+        
+            <li><a href="#channelpoolchannelcallback">channelPool.channel(callback)</a></li>
+        
+            <li><a href="#example">Example</a></li>
         
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="class-stompitchannel">Class: stompit.Channel</h1>
+<h1 id="class-stompitchannelpool">Class: stompit.ChannelPool</h1>
 <hr />
+<h2 id="new-stompitchannelpoolconnectfailover-options">new stompit.ChannelPool(connectFailover, [options])</h2>
+<p>Options:</p>
+<ul>
+<li><code>minChannels</code> <code>integer</code> <code>Default:1</code> minimum number of channels created. For
+   the life cycle of the channel pool, the number of channels allocated will
+   not drop below this value.</li>
+<li><code>minFreeChannels</code> <code>integer</code> <code>Default:1</code> minimum number of spare channels. More
+   channels will be created as existing channels become busy.</li>
+<li><code>maxChannels</code> <code>integer</code> <code>Default:Infinity</code> limit on number of channels 
+   allocated concurrently. While this limit is reached, requests for channels
+   will be waiting in a queue for busy channels to go idle.</li>
+<li><code>freeExcessTimeout</code> <code>integer</code> <code>Default:0</code> milliseconds to wait of idle time 
+   before a channel is closed and deallocated.</li>
+</ul>
+<h2 id="channelpoolchannelcallback">channelPool.channel(callback)</h2>
+<p>Request an unused channel and pass it as an argument to the supplied 
+callback function.</p>
+<p>When a channel emits an <code>idle</code> event the pool either closes the channel or
+reuses it in another channel request. The idle event is emitted when all send 
+and subscribe operations are completed. Be aware, for example that if after the 
+first message is sent and there are no other operations running (i.e. sending
+messages or subscriptions open) then the channel emits an <code>idle</code> event.</p>
+<h2 id="example">Example</h2>
+<pre class="prettyprint well"><code class="js">channelPool.channel(function(error, channel) {
+
+});
+
+</code></pre>
+
 </div>
         </div>
 
