@@ -5,54 +5,68 @@ A STOMP client library for node.js compatible with STOMP 1.0, 1.1 and 1.2 server
 Features:
 * **Transport agnostic** - the client api supports any transport implementing the Stream.Duplex interface;
 * **Frame body streaming** - your application is in direct control of reading and writing frame body data;
-* **High-level Channel API** - messages being sent and subscriptions are maintained after connection interruptions;
 * **Low-level Client API** - socket-like interface with manual connection management and error handling.
+* **High-level Channel API** - messages being sent and subscriptions are maintained after connection interruptions;
 
-Example usage of the Channel API:
+An example of sending and receiving a message using the client API:
 ```javascript
 var stompit = require('stompit');
 
-var connectionManager = new stompit.ConnectFailover([{
-  host: '127.0.0.1', 
-  port: 61613, 
-  connectHeaders:{
-    host: '/',
-    login: 'username',
-    passcode: 'password'
+var connectOptions = {
+  'host': 'localhost',
+  'port': 61613,
+  'connectHeaders':{
+    'host': '/',
+    'login': 'username',
+    'passcode: 'password',
+    'heart-beat': '5000,5000'
   }
-}]);
+};
 
-var channel = new stompit.ChannelFactory(connectionManager);
-
-channel.send('/queue/a', 'hello', function(error) {
+stompit.connect(connectOpts, function(error, client) {
   
   if (error) {
     console.log('send error ' + error.message);
     return;
   }
   
-  console.log('message sent');
-});
-
-channel.subscribe('/queue/a', function(error, message) {
+  var sendHeaders = {
+    'destination': '/queue/test',
+    'content-type': 'text/plain'
+  };
   
-  if (error) {
-    console.log('subscribe error ' + error.message);
-    return;
-  }
+  var frame = client.send(sendHeaders);
+  frame.write('hello');
+  frame.end();
   
-  message.readString('utf8', function(error, body) {
+  var subscribeHeaders = {
+    'destination': '/queue/test',
+    'ack': 'auto'
+  };
+  
+  client.subscribe(subscribeHeaders, function(error, message) {
     
     if (error) {
-      console.log('read message error ' + error.message);
+      console.log('subscribe error ' + error.message);
       return;
     }
     
-    console.log('received message: ' + body);
-    
-    message.ack();
+    message.readString('utf-8', function(error, body) {
+      
+      if (error) {
+        console.log('read message error ' + error.message);
+        return;
+      }
+      
+      console.log('received message: ' + body);
+      
+      message.ack();
+      
+      client.disconnect();
+    });
   });
 });
+
 ```
 
 ## Install
