@@ -23,7 +23,7 @@ var connectOptions = {
   }
 };
 
-stompit.connect(connectOpts, function(error, client) {
+stompit.connect(connectOptions, function(error, client) {
   
   if (error) {
     console.log('send error ' + error.message);
