@@ -26,7 +26,7 @@ var connectOptions = {
 stompit.connect(connectOptions, function(error, client) {
   
   if (error) {
-    console.log('send error ' + error.message);
+    console.log('connect error ' + error.message);
     return;
   }
   
