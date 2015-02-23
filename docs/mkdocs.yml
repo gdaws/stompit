@@ -1,0 +1,15 @@
+site_name: Stompit Manual
+repo_url: https://github.com/gdaws/node-stomp
+
+docs_dir: sources
+
+theme: flatly
+
+pages:
+    - ['index.md']
+    - ['api/index.md', 'stompit module api']
+    - ['api/connect.md', 'stompit module api', 'Function: stompit.connect']
+    - ['api/client.md', 'stompit module api', 'Class: stompit.Client']
+    - ['api/connect-failover.md', 'stompit module api', 'Class: stompit.ConnectFailover']
+    - ['api/channel-pool.md', 'stompit module api', 'Class: stompit.ChannelPool']
+    - ['api/channel.md', 'stompit module api', 'Class: stompit.Channel']
