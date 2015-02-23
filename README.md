@@ -18,7 +18,7 @@ var connectOptions = {
   'connectHeaders':{
     'host': '/',
     'login': 'username',
-    'passcode: 'password',
+    'passcode': 'password',
     'heart-beat': '5000,5000'
   }
 };
