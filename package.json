@@ -27,6 +27,6 @@
     "jshint": "^2.5.2"
   },
   "scripts": {
-    "test": "mocha --recursive && jshint --exclude node_modules ."
+    "test": "mocha --recursive && jshint ."
   }
 }
