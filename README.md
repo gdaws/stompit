@@ -1,12 +1,11 @@
 # stompit [![Build Status](https://travis-ci.org/gdaws/node-stomp.png)](https://travis-ci.org/gdaws/node-stomp)
 
-A STOMP client library for node.js compatible with STOMP 1.0, 1.1 and 1.2 servers.
-
-Features:
-* **Transport agnostic** - the client api supports any transport implementing the Stream.Duplex interface;
-* **Frame body streaming** - your application is in direct control of reading and writing frame body data;
-* **Low-level Client API** - socket-like interface with manual connection management and error handling.
-* **High-level Channel API** - messages being sent and subscriptions are maintained after connection interruptions;
+A STOMP client library for Node.js that is fully compatible with STOMP 1.0, 1.1 
+and 1.2 server. The library provides optional fault tolerance features such as 
+multiple server failover and persistent subscriptions and message publishing 
+across failure events. The API is designed to be consistent with idiomatic 
+Node.js code. Messages are stream oriented. The client supports any 
+Stream.Duplex transport, such as for example tls.TLSSocket.
 
 An example of sending and receiving a message using the client API:
 ```javascript
@@ -71,7 +70,11 @@ stompit.connect(connectOptions, function(error, client) {
 
 ## Install
 
- `npm install stompit`
+
+
+```
+npm install -g stompit
+```
 
 ## Documentation
 
