@@ -10,6 +10,7 @@ var Client          = require('../index').Client;
 var MemorySocket    = require('../lib/util/MemorySocket');
 var BufferWritable  = require('../lib/util/buffer/BufferWritable');
 var BufferReadable  = require('../lib/util/buffer/BufferReadable');
+var NullWritable    = require('../lib/util/NullWritable');
 var Server          = require('../lib/Server');
 var assert          = require('assert');
 
@@ -381,6 +382,71 @@ describe('Channel', function() {
                     gotCallback = true;
                     checkDone();
                 });
+            });
+        });
+    });
+    
+    describe('idle event', function() {
+        
+        it('should emit when send has receipt', function(done) {
+            
+            var sendFinished = false;
+            
+            server2.on('connection', function() {
+                server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
+                    frame.on('end', beforeSendResponse);
+                    frame.pipe(new NullWritable());
+                });
+            });
+            
+            chan.on('idle', function() {
+                assert(sendFinished);
+                done();
+            });
+            
+            chan.send('/queue/test', 'message1', function() {
+                sendFinished = true;
+            });
+        });
+        
+        it('should emit after unlock', function(done) {
+            
+            chan.once('idle', function() {
+                chan.once('idle', function() {
+                    done();
+                });
+            });
+            
+            chan.lock();
+            chan.unlock();
+            
+            chan.lock();
+            chan.unlock();
+        });
+        
+        it('should be blocked while the channel is locked', function(done) {
+            
+            var sendFinished = false;
+            var locked = false;
+            
+            server2.on('connection', function() {
+                server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
+                    frame.on('end', beforeSendResponse);
+                    frame.pipe(new NullWritable());
+                });
+            });
+            
+            chan.on('idle', function() {
+                assert(sendFinished);
+                assert(!locked);
+                done();
+            });
+            
+            chan.lock();
+            
+            chan.send('/queue/test', 'message1', function() {
+                sendFinished = true;
+                chan.unlock();
             });
         });
     });
