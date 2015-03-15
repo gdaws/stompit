@@ -34,6 +34,7 @@ describe('Channel', function() {
         server2 = new Server(new MemorySocket());
         
         server1.on('error', function() {});
+        server2.on('error', function() {});
         
         server1.on('connection', function() {
             
@@ -366,7 +367,7 @@ describe('Channel', function() {
                         });
                     });
                 });
-
+                
                 server2.on('end', function() {
                     closedConnection = true;
                     checkDone();

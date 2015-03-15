@@ -1,6 +1,6 @@
 /*
  * Test stompit.Client
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
+ * Copyright (c) 2013-2015 Graham Daws <graham.daws@gmail.com>
  * MIT licensed
  */
 
@@ -11,6 +11,7 @@ var BufferWritable  = require('../lib/util/buffer/BufferWritable');
 var assert          = require('assert');
 
 var fail = function() {assert(false);};
+var noop = function() {};
 
 describe('Client', function() {
     
@@ -25,6 +26,8 @@ describe('Client', function() {
         server._disconnect = function(frame, beforeSendResponse) {
             beforeSendResponse(null);
         };
+        
+        server.on('error', noop);
         
         client = new Client(socket.getPeerSocket());
     });
@@ -107,6 +110,7 @@ describe('Client', function() {
                 
                 // The remote host has ended the connection
                 client.on('end', function() {
+                    
                     ended = true;
                     assert(finished);
                     done();
@@ -120,8 +124,6 @@ describe('Client', function() {
             client.connect('localhost', function() {
                 
                 server._send = function(frame, beforeSendResponse) {};
-                
-                server.on('error', function() {});
                 
                 client.on('error', function(e) {
                     assert(e.message === 'cannot send frame on closed stream');
@@ -524,7 +526,7 @@ describe('Client', function() {
                         assert(error && error.message === 'testing');
                         done();
                     });
-                     
+                    
                     client.destroy(new Error('testing'));
                 });
             });
