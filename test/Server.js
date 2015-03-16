@@ -60,24 +60,6 @@ describe('Server', function(){
     
     describe('on receiving DISCONNECT command', function(){
         
-        it('should end the transport socket', function(done){
-            client.connect('localhost', function(){
-                client.getTransportSocket().once('end', function(){
-                    done();
-                });
-                client.disconnect();
-            });
-        });
-        
-        it('should emit an end event', function(done){
-            client.connect('localhost', function(){
-                server.once('end', function(){
-                    done();
-                });
-                client.disconnect();
-            });
-        });
-        
         it('should reply with a receipt', function(done){
             client.connect('localhost', function(){
                 client.disconnect(function(){
