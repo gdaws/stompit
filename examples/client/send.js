@@ -4,7 +4,9 @@ var connectParams = {
     host: 'localhost',
     port: 61613,
     connectHeaders:{
-        host: 'mybroker'
+        host: 'localhost',
+        login: 'admin',
+        passcode: 'password'
     }
 };
 

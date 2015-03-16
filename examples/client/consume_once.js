@@ -4,7 +4,9 @@ var connectParams = {
     host: 'localhost',
     port: 61613,
     connectHeaders:{
-        host: 'mybroker'
+        host: 'localhost',
+        login: 'admin',
+        passcode: 'password'
     }
 };
 
@@ -22,7 +24,7 @@ stompit.connect(connectParams, function(error, client){
     
     var consuming = false;
     
-    client.subscribe(subscribeParams, function(message){
+    client.subscribe(subscribeParams, function(error, message){
         
         // Don't consume more than one message
         if(consuming){

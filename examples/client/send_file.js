@@ -1,4 +1,5 @@
 var stompit = require('stompit');
+
 var fs = require('fs');
 var path = require('path');
 
@@ -6,7 +7,9 @@ var connectParams = {
     host: 'localhost',
     port: 61613,
     connectHeaders:{
-        host: 'mybroker'
+        host: 'localhost',
+        login: 'admin',
+        passcode: 'password'
     }
 };
 

@@ -4,11 +4,12 @@ var stompit = require('stompit');
 
 var servers = [
   { 
-    host: '172.17.0.2',
+    host: 'localhost',
     port: 61613,
-    timeout: 3000,
     connectHeaders:{
-      'host': 'mybroker',
+      'host': 'localhost',
+      'login': 'admin',
+      'passcode': 'password',
       'heart-beat': '100,100'
     }
   }
@@ -25,55 +26,64 @@ var connections = new stompit.ConnectFailover(servers, reconnectOptions);
 
 connections.on('connecting', function(connector) {
   
-  var address = connector.remoteAddress.transportPath;
+  var address = connector.serverProperties.remoteAddress.transportPath;
   
   console.log('Connecting to ' + address);
 });
 
 connections.on('error', function(error) {
   
-  var address = error.connector.remoteAddress.transportPath;
+  var connectArgs = error.connectArgs;
+  var address = connectArgs.host + ':' + connectArgs.port;
   
   console.log('Connection error to ' + address + ': ' + error.message);
 });
 
 // Create channel, subscribe to a queue, and consume one message
 
-var channel = new stompit.ChannelFactory(connections);
+var channelFactory = new stompit.ChannelFactory(connections);
 
-var headers = {
-  'destination': '/queue/test',
-  'ack': 'client-individual'
-};
 
-channel.subscribe(headers, function(error, message, subscription){
+channelFactory.channel(function(error, channel) {
   
   if (error) {
-    console.log('subscribe error: ' + error.message);
+    console.log('channel factory error: ' + error.message);
     return;
   }
   
-  message.readString('utf8', function(error, string) {
-        
+  var headers = {
+    'destination': '/queue/test',
+    'ack': 'client-individual'
+  };
+
+  channel.subscribe(headers, function(error, message, subscription){
+    
     if (error) {
-      console.log('read message error: ' + error.message);
+      console.log('subscribe error: ' + error.message);
       return;
     }
     
-    console.log('receive message: ' + string);
-    
-    message.ack(function(error) {
-      
+    message.readString('utf8', function(error, string) {
+          
       if (error) {
-        console.log('ack error:' + error.message);
+        console.log('read message error: ' + error.message);
         return;
       }
       
-      console.log('message acknowledged');
+      console.log('receive message: ' + string);
+      
+      message.ack(function(error) {
+        
+        if (error) {
+          console.log('ack error:' + error.message);
+          return;
+        }
+        
+        console.log('message acknowledged');
+      });
+      
+      // We only want to consume one message so we unsubscribe now  
+      subscription.unsubscribe();
     });
-    
-    // We only want to consume one message so we unsubscribe now  
-    subscription.unsubscribe();
   });
-  
 });

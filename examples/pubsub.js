@@ -1,53 +1,84 @@
 var stompit = require('stompit');
 
-var connections = new stompit.ConnectFailover([
+var connectionManager = new stompit.ConnectFailover([
   {
-    host: '172.17.0.2', 
-    port: 61613, 
+    host: 'localhost', 
+    port: 61613,
+    resetDisconnect: false,
     connectHeaders:{
-      host: 'mybroker'
+      'accept-version': '1.0',
+      host: 'localhost',
+      login: 'admin',
+      passcode: 'password',
+      'heart-beat': '1000,1000'
     }
   }
 ]);
 
-connections.on('error', function(error) {
-    console.log('Could not connect to ' + error.connector.remoteAddress.transportPath + ': ' + error.message);
+connectionManager.on('error', function(error) {
+  var connectArgs = error.connectArgs;
+  var address = connectArgs.host + ':' + connectArgs.port;
+  console.log('Could not connect to ' + address + ': ' + error.message);
 });
 
-connections.on('connecting', function(connector) {
-  console.log('Connecting to ' + connector.remoteAddress.transportPath);
+connectionManager.on('connecting', function(connector) {
+  console.log('Connecting to ' + connector.serverProperties.remoteAddress.transportPath);
 });
 
-var channel = stompit.ChannelPool(connections);
+var channelPool = stompit.ChannelPool(connectionManager);
 
-channel.send({destination:'/queue/a'}, 'hello', function(error) {
-
+channelPool.channel(function(error, channel) {
+  
   if (error) {
-    console.log('send error ' + error.message);
+    console.log('send-channel error: ' + error.message);
     return;
   }
-
-  console.log('message sent');
-});
-
-channel.subscribe('/queue/a', function(error, message, subscription) {
-
-  if (error) {
-    console.log('subscribe error ' + error.message);
-    return;
-  }
-
-  message.readString('utf8', function(error, body) {
-
+  
+  var sendHeaders = {
+    destination: '/queue/a'
+  };
+  
+  channel.send(sendHeaders, 'hello', function(error) {
+    
     if (error) {
-      console.log('read message error ' + error.message);
+      console.log('send error ' + error.message);
       return;
     }
+    
+    console.log('message sent');
+  });
+});
 
-    console.log('received message: ' + body);
+channelPool.channel(function(error, channel) {
+  
+  if (error) {
+    console.log('subscribe-channel error: ' + error.message);
+    return;
+  }
+  
+  var subscribeHeaders = {
+    destination: '/queue/a'
+  };
+  
+  channel.subscribe(subscribeHeaders, function(error, message, subscription) {
     
-    message.ack();
+    if (error) {
+      console.log('subscribe error: ' + error.message);
+      return;
+    }
     
-    subscription.unsubscribe();
+    message.readString('utf8', function(error, body) {
+      
+      if (error) {
+        console.log('read message error ' + error.message);
+        return;
+      }
+
+      console.log('received message: ' + body);
+      
+      message.ack();
+      
+      subscription.unsubscribe();
+    });
   });
 });
