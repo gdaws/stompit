@@ -358,13 +358,10 @@ describe('IncomingFrameStream', function() {
         });
     });
     
+    
     it('should respond to back-pressure in the frame body stream', function(done) {
         
-        stream = new IncomingFrameStream({
-            frameStreamOptions:{
-                highWaterMark: 1
-            }
-        });
+        stream = new IncomingFrameStream();
         
         assert(stream.write('MESSAGE\n\n') === false);
         // should choke the tranform stream because IncomingFrame object has been 
@@ -382,8 +379,6 @@ describe('IncomingFrameStream', function() {
         });
         
         readFrame(stream, function(error, frame) {
-            
-            assert(frame._readableState.highWaterMark === 1);
             
             var writable = new NullWritable();
             
