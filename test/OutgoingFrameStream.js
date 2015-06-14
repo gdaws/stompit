@@ -35,11 +35,11 @@ describe('OutgoingFrameStream', function(){
                 it('should value-encode command and headers', function(done){
                     
                     var frame = output.frame('\n:\\', {
-                        '\n:\\': '\n:\\'
+                        '\n:\\': '\n\n::\\\\'
                     });
                     
                     frame.end(function(){
-                        assert(writable.getWrittenSlice().toString() === '\\n\\c\\\\\n\\n\\c\\\\:\\n\\c\\\\\n\n\x00\n');
+                        assert(writable.getWrittenSlice().toString() === '\\n\\c\\\\\n\\n\\c\\\\:\\n\\n\\c\\c\\\\\\\\\n\n\x00\n');
                         done();
                     });
                 });
