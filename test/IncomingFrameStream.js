@@ -266,7 +266,7 @@ describe('IncomingFrameStream', function() {
             });
         });
         
-        it('should use the first occuring entry of a repeated header', function(done) {
+        it('should use the first occurring entry of a repeated header', function(done) {
             
             stream.write('CONNECT\ntest:1\ntest:2\n\n\x00');
             
@@ -364,7 +364,7 @@ describe('IncomingFrameStream', function() {
         stream = new IncomingFrameStream();
         
         assert(stream.write('MESSAGE\n\n') === false);
-        // should choke the tranform stream because IncomingFrame object has been 
+        // should choke the transport stream because IncomingFrame object has been 
         // pushed and is waiting to be read
         
         stream.once('drain', function() {
