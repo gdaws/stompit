@@ -16,8 +16,7 @@ var servers = [
 ];
 
 var reconnectOptions = {
-  maxReconnectAttempts: 1,
-  maxAttempts: 1
+  maxReconnects: 1
 };
 
 var connections = new stompit.ConnectFailover(servers, reconnectOptions);

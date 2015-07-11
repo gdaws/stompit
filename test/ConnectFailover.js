@@ -80,7 +80,6 @@ var defaultOptions = {
     maxReconnectDelay: 1500,
     useExponentialBackOff: true,
     reconnectDelayExponent: 2.0,
-    maxReconnectAttempts: -1,
     maxReconnects: -1,
     randomize: true
 };
@@ -269,12 +268,11 @@ describe('ConnectFailover', function() {
         
         it('should cast values of known options', function() {
             
-            var ret = parse('failover:(primary)?initialReconnectDelay=10&maxReconnectDelay=30000&useExponentialBackOff=true&maxReconnectAttempts=-1&maxReconnects=-1&randomize=true');
+            var ret = parse('failover:(primary)?initialReconnectDelay=10&maxReconnectDelay=30000&useExponentialBackOff=true&maxReconnects=-1&randomize=true');
             
             assert(ret.options.initialReconnectDelay === 10);
             assert(ret.options.maxReconnectDelay === 30000);
             assert(ret.options.useExponentialBackOff === true);
-            assert(ret.options.maxReconnectAttempts === -1);
             assert(ret.options.maxReconnects === -1);
             assert(ret.options.randomize === true);
             
@@ -307,9 +305,6 @@ describe('ConnectFailover', function() {
             expectParseError('failover:(sasf)?maxReconnectDelay=-34');
             
             expectParseError('failover:(sasf)?useExponentialBackOff=asdf');
-            
-            expectParseError('failover:(sasf)?maxReconnectAttempts=asdf');
-            expectParseError('failover:(sasf)?maxReconnectAttempts=-34');
             
             expectParseError('failover:(sasf)?maxReconnects=asdf');
             expectParseError('failover:(sasf)?maxReconnects=-34');
