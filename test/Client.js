@@ -208,7 +208,7 @@ describe('Client', function() {
             };
 
             client.connect('localhost', function() {
-                client.sendString('abcdefgh', {destination: '/test'});
+                client.sendString({destination: '/test'}, 'abcdefgh');
             });
         });
 
@@ -225,7 +225,7 @@ describe('Client', function() {
             };
 
             client.connect('localhost', function() {
-                client.sendString('abcdefgh', '/test');
+                client.sendString('/test', 'abcdefgh');
             });
         });
     });
