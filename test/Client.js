@@ -193,7 +193,7 @@ describe('Client', function() {
         });
     });
 
-    describe('#sendMessage', function() {
+    describe('#sendString', function() {
         it('should send a message with the specified body', function(done) {
             server._send = function(frame, beforeSendResponse) {
                 assert(frame.headers.destination === '/test');
@@ -208,7 +208,7 @@ describe('Client', function() {
             };
 
             client.connect('localhost', function() {
-                client.sendMessage('abcdefgh', {destination: '/test'});
+                client.sendString('abcdefgh', {destination: '/test'});
             });
         });
 
@@ -225,7 +225,7 @@ describe('Client', function() {
             };
 
             client.connect('localhost', function() {
-                client.sendMessage('abcdefgh', '/test');
+                client.sendString('abcdefgh', '/test');
             });
         });
     });
