@@ -192,7 +192,44 @@ describe('Client', function() {
             });
         });
     });
-    
+
+    describe('#sendString', function() {
+        it('should send a message with the specified body', function(done) {
+            server._send = function(frame, beforeSendResponse) {
+                assert(frame.headers.destination === '/test');
+                var writable = new BufferWritable(new Buffer(26));
+                frame.on('end', function() {
+                    beforeSendResponse();
+                    assert(writable.getWrittenSlice().toString() === 'abcdefgh');
+                    done();
+                });
+
+                frame.pipe(writable);
+            };
+
+            client.connect('localhost', function() {
+                client.sendString({destination: '/test'}, 'abcdefgh');
+            });
+        });
+
+        it('should treat the second argument as the destination if it\'s a string value', function(done) {
+            server._send = function(frame, beforeSendResponse) {
+                assert(frame.headers.destination === '/test');
+                var writable = new BufferWritable(new Buffer(26));
+                frame.on('end', function() {
+                    beforeSendResponse();
+                    done();
+                });
+
+                frame.pipe(writable);
+            };
+
+            client.connect('localhost', function() {
+                client.sendString('/test', 'abcdefgh');
+            });
+        });
+    });
+
     describe('#destroy', function() {
         
         it('should emit an error event with the passed error argument', function(done) {
