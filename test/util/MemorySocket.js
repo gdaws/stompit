@@ -67,7 +67,7 @@ describe('MemorySocket', function(){
        
         it('should emit a close event', function(done){
             
-            var local = new MemorySocket({allowHalfOpen: false});
+            var local = new MemorySocket(0, {allowHalfOpen: false});
             var peer = local.getPeerSocket();
             
             local.on('close', function(){
