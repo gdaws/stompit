@@ -30,6 +30,9 @@ describe('Client', function() {
         server.on('error', noop);
         
         client = new Client(socket.getPeerSocket());
+        
+        // User of client is expected to listen for error events
+        client.on('error', noop);
     });
     
     describe('#connect', function() {
