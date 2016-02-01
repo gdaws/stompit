@@ -8,6 +8,7 @@ var  Client         = require('../index').Client;
 var Server          = require('../lib/Server');
 var MemorySocket    = require('../lib/util/MemorySocket');
 var BufferWritable  = require('../lib/util/buffer/BufferWritable');
+var NullWritable    = require('../lib/util/NullWritable');
 var assert          = require('assert');
 
 var fail = function() {assert(false);};
@@ -548,6 +549,83 @@ describe('Client', function() {
             });
         });
         
+        describe('#ack', function() {
+
+            it('should accept a sendOptions object', function(done) {
+
+                server._subscribe = function(frame, beforeSendResponse) {
+                    
+                    var id = frame.headers.id;
+                    
+                    beforeSendResponse();
+                    
+                    server.sendFrame('MESSAGE', {
+                        'subscription': id,
+                        'message-id': 1,
+                    }).end();
+                };
+                
+                server._ack = function(frame, beforeSendResponse) {
+                    beforeSendResponse();
+                };
+
+                server._nack = fail;
+                server._unsubscribe = fail;
+
+                client.connect('localhost', function() {
+                    
+                    client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
+                        
+                        message.on('end', function() {
+                            message.ack({
+                                onReceipt: function() {
+                                    done();
+                                }
+                            });
+                        });
+                        
+                        message.pipe(new NullWritable());
+                    });
+                });
+            });
+
+            it('should accept a callback function', function(done) {
+
+                server._subscribe = function(frame, beforeSendResponse) {
+                    
+                    var id = frame.headers.id;
+                    
+                    beforeSendResponse();
+                    
+                    server.sendFrame('MESSAGE', {
+                        'subscription': id,
+                        'message-id': 1,
+                    }).end();
+                };
+                
+                server._ack = function(frame, beforeSendResponse) {
+                    beforeSendResponse();
+                };
+
+                server._nack = fail;
+                server._unsubscribe = fail;
+
+                client.connect('localhost', function() {
+                    
+                    client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
+                        
+                        message.on('end', function() {
+                            message.ack(function(error) {
+                                done();
+                            });
+                        });
+                        
+                        message.pipe(new NullWritable());
+                    });
+                });
+            });
+        });
+
         describe('Subscription', function() {
             
             it('should pass error to the message listener', function(done) {
