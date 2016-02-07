@@ -33,6 +33,14 @@ Subscribe to consume messages.
 
 ### subscription.unsubscribe()
 
+## channel.ack(message)
+
+Calls [client.ack](./client.md#clientackmessage) on the underlying client object.
+
+## channel.nack(message)
+
+Calls [client.nack](./client.md#clientnackmessage) on the underlying client object.
+
 ## channel.begin([headers])
 
 Start a transaction.

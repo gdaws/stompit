@@ -98,18 +98,23 @@ message object extends `stream.Readable`
 
 ### message.ack()
 
-Send acknowledgement to server. This method should be called after the end 
-event is emitted from the message object. Even if the subscription is in auto 
-mode, you must still call one of the acknowledgment methods.
+This method is deprecated and will be removed in a future version of Stompit.
+Use `client.ack` method instead.
 
 ### message.nack()
 
-Send negative acknowledgement to server. This method should be called after the 
-end event is emitted.
 
-Do not use the `message.nack` method before reading all the message content. If
-you cannot read the message content then the connection must be terminated 
-using the [client.destroy](#clientdestroyerror) method.
+This method is deprecated and will be removed in a future version of Stompit.
+Use `client.nack` method instead.
+
+## client.ack(message)
+
+Send an ACK frame to acknowledge the consumption of `message`.
+
+## client.nack(message)
+
+Send a NACK frame to negatively acknowledge that `message` was not accepted for
+consumption.
 
 ## client.begin([headers])
 
