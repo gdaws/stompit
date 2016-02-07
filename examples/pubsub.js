@@ -76,8 +76,6 @@ channelPool.channel(function(error, channel) {
 
       console.log('received message: ' + body);
       
-      message.ack();
-      
       subscription.unsubscribe();
     });
   });

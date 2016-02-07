@@ -43,7 +43,7 @@ stompit.connect(connectParams, function(error, client){
         message.on('readable', read);
         
         message.on('end', function(){
-            message.ack();
+            client.ack(message);
             client.disconnect();
         });
     });

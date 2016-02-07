@@ -70,16 +70,8 @@ channelFactory.channel(function(error, channel) {
       }
       
       console.log('receive message: ' + string);
-      
-      message.ack(function(error) {
-        
-        if (error) {
-          console.log('ack error:' + error.message);
-          return;
-        }
-        
-        console.log('message acknowledged');
-      });
+
+      channel.ack(message);
       
       // We only want to consume one message so we unsubscribe now  
       subscription.unsubscribe();

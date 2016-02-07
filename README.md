@@ -40,7 +40,7 @@ stompit.connect(connectOptions, function(error, client) {
   
   var subscribeHeaders = {
     'destination': '/queue/test',
-    'ack': 'auto'
+    'ack': 'client-individual'
   };
   
   client.subscribe(subscribeHeaders, function(error, message) {
@@ -59,7 +59,7 @@ stompit.connect(connectOptions, function(error, client) {
       
       console.log('received message: ' + body);
       
-      message.ack();
+      client.ack(message);
       
       client.disconnect();
     });
