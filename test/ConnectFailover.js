@@ -260,6 +260,11 @@ describe('ConnectFailover', function() {
             assert(ret.options.var1 === 'val1');
             assert(ret.options.var2 === 'val2');
         });
+
+        it('parse query string variable into string', function() {
+            var ret = parse('failover:(primary)?var1=1,2');
+            assert(ret.options.var1 === '1,2');
+        });
         
         it('should accept an empty query string', function() {
             var ret = parse('failover:(primary)?');
