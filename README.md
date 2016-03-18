@@ -59,7 +59,7 @@ stompit.connect(connectOptions, function(error, client) {
       
       console.log('received message: ' + body);
       
-      message.ack()
+      message.ack();
       
       client.disconnect();
     });
