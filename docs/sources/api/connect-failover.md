@@ -2,27 +2,21 @@
 
 ---
 
-Reconnect management for stompit.Client
+Connection failover management for stompit.Client
 
 ## new stompit.ConnectFailover(servers, [options])
 
-The servers parameter is an array of servers where each element is an object of 
-server settings (the same options used in [stompt.connect](../connect/)).
+The servers parameter is an array of servers where each element is an object 
+containing server settings (the same settings used in [stompt.connect](../connect/)).
 
 Options:
 
-* `initialReconnectDelay` `integer` `Default:10` milliseconds delay of the first 
-  reconnect
-* `maxReconnectDelay` `integer` `Default:30000` maximum milliseconds delay of 
-   any reconnect
-* `useExponentialBackOff` `boolean` `Default:true` exponential increase
-   in reconnect delay
-* `maxReconnects` `integer` `Default:-1` maximum number of failed reconnects 
-   consecutively
-* `randomize` `boolean` `Default:true` randomly choose a server to use when
-  reconnecting
-* `connectFunction` `function` `Default:stompit.connect` override the client 
-   factory constructor used
+* `initialReconnectDelay` `integer` `Default:10` milliseconds delay of the first reconnect
+* `maxReconnectDelay` `integer` `Default:30000` maximum milliseconds delay of any reconnect
+* `useExponentialBackOff` `boolean` `Default:true` exponential increase in reconnect delay
+* `maxReconnects` `integer` `Default:-1` maximum number of failed reconnects consecutively
+* `randomize` `boolean` `Default:true` randomly choose a server when reconnecting
+* `connectFunction` `function` `Default:stompit.connect` override the client factory constructor
 
 ## failover.addServer(server)
 
@@ -30,15 +24,12 @@ Append a server to the server list
 
 ## failover.connect(callback)
 
-Connect to a server and then callback is called with arguments `error, client, reconnect`.
-The error argument will be an Error object if the reconnect limit is reached. 
-Reconnect state is not shared between failover.connect calls, each connect
-call tracks its own number of reconnects and uses the limits set in the 
-ConnectFailover object. The client argument is a [Client](../client/) object 
-which is ready to send and subscribe. The reconnect argument is a function to
-reconnect to a server and repeat the callback. You don't reuse the client 
-object between reconnects; for each callback call a new client object is 
-provided.
+Connects to a server and provides the callback with a new client object. The 
+callback parameters are `error, client, reconnect`. The reconnect argument is
+a function that can be used to create a new connection and client when an error
+event is detected on the current client. The purpose of the reconnect function
+is to choose the next server and reconnect time based on the previous reconnects
+state. The reconnect state is stored in the reconnect-connect closure.
 
 ## Example
 
