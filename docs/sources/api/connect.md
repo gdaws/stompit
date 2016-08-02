@@ -23,6 +23,8 @@ Options:
 * `path` `string` use unix domain socket and use path as the destination address
 * `ssl` `boolean` `Default:false` use secure connection
 * `connect` `function` override the transport factory constructor used
+* `heartbeatDelayMargin` `integer` `Default:100` add milliseconds for server heart-beat wait interval
+* `heartbeatOutputMargin` `integer` `Default:0` substract milliseconds for client heart-beat start interval
 
 Options available when ssl is set to true:
 
