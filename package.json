@@ -1,7 +1,7 @@
 {
   "name": "stompit",
   "description": "STOMP client library for node.js",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "keywords": [
     "stomp", "messaging"
   ],
