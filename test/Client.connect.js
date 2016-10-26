@@ -35,4 +35,19 @@ describe('Client.connect', function() {
     done();
   });
 
+  it('should parse the heart-beat header and call setHeartbeat', function(done) {
+
+    client.connect({
+      'heart-beat': '1,2'
+    });
+
+    var heartbeat = client.getHeartbeat();
+
+    assert.equal(heartbeat[0], 1);
+    assert.equal(heartbeat[1], 2);
+
+    assert.equal(framesOut._frames[0].headers['heart-beat'], '1,2');
+
+    done();
+  });
 });
