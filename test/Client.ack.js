@@ -42,6 +42,19 @@ describe('Client.ack', function() {
 
     done();
   });
+
+  it('should call the callback', function(done) {
+    client.ack({
+      headers: {
+        'subscription': '0',
+        'message-id': '001',
+        'ack': '002'
+      }
+    }, undefined, undefined, function() {
+      assert.ok(true);
+      done();
+    });
+  });
 });
 
 describe('Client.nack', function() {
@@ -81,5 +94,18 @@ describe('Client.nack', function() {
     assert(frame._finished);
 
     done();
+  });
+
+  it('should call the callback', function(done) {
+    client.nack({
+      headers: {
+        'subscription': '0',
+        'message-id': '001',
+        'ack': '002'
+      }
+    }, undefined, undefined, function() {
+      assert.ok(true);
+      done();
+    });
   });
 });
