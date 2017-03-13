@@ -232,6 +232,23 @@ describe('Client', function() {
                 client.sendString('/test', 'abcdefgh');
             });
         });
+
+        it('should call the callback', function(done) {
+            server._send = function(frame, beforeSendResponse) {
+                var writable = new BufferWritable(new Buffer(26));
+                frame.on('end', function() {
+                    beforeSendResponse();
+                });
+                frame.pipe(writable);
+            };
+
+            client.connect('localhost', function() {
+                client.sendString({destination: '/test'}, 'abcdefgh', undefined, function() {
+                  assert.ok(true);
+                  done();
+                });
+            });
+        });
     });
 
     describe('#destroy', function() {
