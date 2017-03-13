@@ -1133,4 +1133,81 @@ describe('Client', function() {
             }, 10);
         });
     });
+
+    it('should send heart beats only', function(done) {
+        
+        server.setHeartbeat([0, 2]);
+
+        client.connect({'heart-beat': '2,0'}, function() {
+            
+            var socket = client.getTransportSocket();
+            
+            var bytesRead = socket.bytesRead;
+            var bytesWritten = socket.bytesWritten;
+            
+            setTimeout(function() {
+                assert(socket.bytesRead == bytesRead);
+                assert(socket.bytesWritten > bytesWritten);
+                done();
+            }, 10);
+        });
+    });
+
+    it ('should receive heart beats only', function(done) {
+
+        server.setHeartbeat([2, 0]);
+
+        client.connect({'heart-beat': '0,2'}, function() {
+            
+            var socket = client.getTransportSocket();
+            
+            var bytesRead = socket.bytesRead;
+            var bytesWritten = socket.bytesWritten;
+            
+            setTimeout(function() {
+                assert(socket.bytesRead > bytesRead);
+                assert(socket.bytesWritten == bytesWritten);
+                done();
+            }, 10);
+        });
+    });
+
+    it ('client should disable heart beating', function(done) {
+
+        server.setHeartbeat([2, 2]);
+
+        client.connect({'heart-beat': '0,0'}, function() {
+            
+            var socket = client.getTransportSocket();
+            
+            var bytesRead = socket.bytesRead;
+            var bytesWritten = socket.bytesWritten;
+            
+            setTimeout(function() {
+                assert(socket.bytesRead == bytesRead);
+                assert(socket.bytesWritten == bytesWritten);
+                done();
+            }, 10);
+        });
+    });
+
+
+    it ('server should disable heart beating', function(done) {
+
+        server.setHeartbeat([0, 0]);
+
+        client.connect({'heart-beat': '2,2'}, function() {
+            
+            var socket = client.getTransportSocket();
+            
+            var bytesRead = socket.bytesRead;
+            var bytesWritten = socket.bytesWritten;
+            
+            setTimeout(function() {
+                assert(socket.bytesRead == bytesRead);
+                assert(socket.bytesWritten == bytesWritten);
+                done();
+            }, 10);
+        });
+    });
 });
