@@ -151,6 +151,39 @@ describe('Client', function() {
         });
     });
     
+    describe('#readEmptyBody', function() {
+
+        it('should callback after reading an empty body frame', function(done) {
+
+            var frame = {
+                readEmptyBody: function(callback) {
+                    callback(true);
+                }
+            };
+
+            client.readEmptyBody(frame, done);
+        });
+
+
+        it('should call destroy method after reading non-empty body frame', function(done) {
+
+            var frame = {
+                readEmptyBody: function(callback) {
+                    callback(false);
+                }
+            };
+
+            client.destroy = function(error) {
+                assert(error.isProtocolError);
+                assert(error.message === 'expected empty body frame');
+                done();
+            };
+
+            client.readEmptyBody(frame);
+        });
+
+    });
+
     describe('#send', function() {
         
         it('should send a message', function(done) {
