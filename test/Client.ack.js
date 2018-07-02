@@ -6,7 +6,6 @@ var OutgoingFrameStreamFailing = require('./mock/OutgoingFrameStreamFailing');
 var assert = require('assert');
 
 describe('Client.ack', function() {
-  this.timeout(20000);
 
   var client, transport, framesOut, framesIn;
 

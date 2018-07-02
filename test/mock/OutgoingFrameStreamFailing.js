@@ -46,6 +46,8 @@ function Frame(stream, command, headers, streamOptions, errMsg) {
   });
 }
 
+util.inherits(Frame, Stream.Writable);
+
 Frame.prototype._write = function() {
   this.emit('error', this._errMsg ? new Error(this._errMsg) : null);
 };
@@ -66,8 +68,6 @@ Frame.prototype._endFrame = function(cb) {
     Stream.Writable.prototype.end.apply(self);
   });
 };
-
-util.inherits(Frame, Stream.Writable);
 
 OutgoingFrameStream.prototype._write = function(chunk, encoding, callback) {
   this._body = Buffer.concat([this._body, chunk]);
