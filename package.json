@@ -3,7 +3,8 @@
   "description": "STOMP client library for node.js",
   "version": "0.25.0",
   "keywords": [
-    "stomp", "messaging"
+    "stomp",
+    "messaging"
   ],
   "licenses": [
     {
@@ -12,21 +13,23 @@
     }
   ],
   "repository": {
-    "type":"git",
+    "type": "git",
     "url": "https://github.com/gdaws/node-stomp.git"
   },
-  "engines": { 
-    "node" : ">=0.10"
+  "engines": {
+    "node": ">=0.10"
   },
   "dependencies": {
     "qs": "~3.1.0",
     "object-assign": "^2.0.0"
   },
   "devDependencies": {
-    "mocha" : "^1.21.3",
-    "jshint": "^2.5.2"
+    "jshint": "^2.5.2",
+    "mocha": "^1.21.3",
+    "nyc": "^12.0.2"
   },
   "scripts": {
-    "test": "mocha --recursive && jshint ."
+    "test": "mocha --recursive && jshint .",
+    "coverage": "nyc npm t"
   }
 }
