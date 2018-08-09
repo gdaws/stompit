@@ -2,6 +2,7 @@
 var Client = require('../index').Client;
 var Transport = require('./mock/Transport');
 var OutgoingFrameStream = require('./mock/OutgoingFrameStream');
+var OutgoingFrameStreamFailing = require('./mock/OutgoingFrameStreamFailing');
 var assert = require('assert');
 
 describe('Client.ack', function() {
@@ -52,6 +53,47 @@ describe('Client.ack', function() {
       }
     }, undefined, undefined, function() {
       assert.ok(true);
+      done();
+    });
+  });
+
+  it('should call the callback with an error', function(done) {
+    var errMsg = 'My Error Message';
+    var clientToFail = new Client(transport, {
+      outgoingFrameStream: new OutgoingFrameStreamFailing(errMsg)
+    });
+    clientToFail.ack({
+      headers: {
+        'subscription': '0',
+        'message-id': '001',
+        'ack': '002'
+      }
+    }, undefined, {
+      onError: function (err) {
+        assert.equal(err.message, errMsg);
+      }
+    }, function(err) {
+      assert.equal(err.message, errMsg);
+      done();
+    });
+  });
+
+  it('should call the callback with an undefined error', function(done) {
+    var clientToFail = new Client(transport, {
+      outgoingFrameStream: new OutgoingFrameStreamFailing()
+    });
+    clientToFail.ack({
+      headers: {
+        'subscription': '0',
+        'message-id': '001',
+        'ack': '002'
+      }
+    }, undefined, {
+      onError: function (err) {
+        assert.equal(err.message, 'The frame failed but no error was provided');
+      }
+    }, function(err) {
+      assert.equal(err.message, 'The frame failed but no error was provided');
       done();
     });
   });
