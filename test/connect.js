@@ -102,29 +102,17 @@ describe('connect(options, [connectionListener])', function(){
     });
     
     it('should accept a transport connect function', function(done){
-        
-        var server = startServer(function(stomp){
-            
-        });
-        
-        var calledTransportFunction = false;
-        
-        var transport = function(options, callback){
-            calledTransportFunction = true;
-            return net.connect({
-                host: options.host,
-                port: options.port 
-            }, callback);
+
+        var transport = function(options, callback) {
+            assert(options.host == '127.0.0.7');
+            assert(options.port == 61619);
+            done();
         };
         
         var client = connect({
-            host:'127.0.0.1',
-            port: server.address().port,
+            host:'127.0.0.7',
+            port: 61619,
             connect: transport
-        }, function(error){
-            assert(!error);
-            assert(calledTransportFunction);
-            done();
         });
     });
     
