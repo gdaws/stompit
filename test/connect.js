@@ -14,7 +14,7 @@ var Server      = require('../lib/Server');
 var assert      = require('assert');
 
 var startServer = function(listener){
-    var server = net.createServer(function(socket){
+    var server = net.createServer({family: 4}, function(socket){
         var stomp = new Server(socket);
         listener(stomp);
     });
@@ -27,20 +27,6 @@ var readFile = function(filename){
         filename = path.dirname(module.filename) + path.sep + filename;
     }
     return fs.readFileSync(filename);
-};
-
-var startSecureServer = function(listener){
-    var server = tls.createServer({
-        ca:   [readFile('fixtures/ca.crt')],
-        cert: readFile('fixtures/server.crt'),
-        key:  readFile('fixtures/server.key'),
-        requestCert: false
-    }, function(socket){
-        var stomp = new Server(socket);
-        listener(stomp);
-    });
-    server.listen(0);
-    return server;
 };
 
 var startBrokenServer = function(){
@@ -142,32 +128,21 @@ describe('connect(options, [connectionListener])', function(){
         });
     });
     
-    it('should use tls.connect when ssl option is set to true', function(done){
+    it('should use tls.connect when ssl option is true', function(done){
         
-        var serverCallback = false;
-        var connectCallback = false;
-        
-        var server = startSecureServer(function(stomp){
-            stomp.on('connection', function(){
-                serverCallback = true;
-                if(serverCallback && connectCallback){
-                    done();
-                }
-            });
-        });
-        
+        var nativeTlsConnect = tls.connect;
+
+        tls.connect = function() {
+            tls.connect = nativeTlsConnect;
+            done();
+            return nativeTlsConnect.apply(this, arguments);
+        };
+
         connect({
-            host:'localhost',
-            port: server.address().port,
+            host: 'localhost',
+            port: 61613,
             ssl: true,
-            ca: [readFile('fixtures/ca.crt')]
-        }, function(error, client){
-            assert(!error);
-            assert(client instanceof Client);
-            connectCallback = true;
-            if(serverCallback && connectCallback){
-                done();
-            }
+            ca: [readFile('fixtures/ca.crt')],
         });
     });
 });
