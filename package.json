@@ -1,17 +1,14 @@
 {
   "name": "stompit",
   "description": "STOMP client library for node.js",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "keywords": [
     "stomp",
-    "messaging"
+    "messaging",
+    "activemq",
+    "rabbitmq"
   ],
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://raw.github.com/gdaws/node-stomp/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/gdaws/node-stomp.git"
