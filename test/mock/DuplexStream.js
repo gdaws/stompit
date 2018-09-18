@@ -4,7 +4,7 @@ var Stream  = require('stream');
 
 function DuplexStream() {
   Stream.Duplex.apply(this, arguments);
-  this._written = new Buffer(0);
+  this._written = Buffer.alloc(0);
 }
 
 util.inherits(DuplexStream, Stream.Duplex);

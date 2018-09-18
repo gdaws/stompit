@@ -12,7 +12,7 @@ describe('BufferReadWritable', function(){
     
     it('should be readable after write', function(){
         
-        var iostream = new BufferReadWritable(new Buffer(2));
+        var iostream = new BufferReadWritable(Buffer.alloc(2));
         
         assert(iostream.write('A'));
         
@@ -32,7 +32,7 @@ describe('BufferReadWritable', function(){
     
     it('should recyle the buffer', function(done){
         
-        var iostream = new BufferReadWritable(new Buffer(2), {
+        var iostream = new BufferReadWritable(Buffer.alloc(2), {
             highWaterMark: 0
         });
         
@@ -66,11 +66,11 @@ describe('BufferReadWritable', function(){
     
     it('should be able to transfer a chunk that is bigger than the buffer', function(done){
         
-        var iostream = new BufferReadWritable(new Buffer(2), {
+        var iostream = new BufferReadWritable(Buffer.alloc(2), {
             highWaterMark: 0
         });
         
-        var checkBuffer = new Buffer(9);
+        var checkBuffer = Buffer.alloc(9);
         
         var finishedWriting = false;
         var finishedReading = false;

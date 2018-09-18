@@ -192,7 +192,7 @@ describe('Client', function() {
                 
                 assert(frame.headers.destination === '/test');
                 
-                var writable = new BufferWritable(new Buffer(26));
+                var writable = new BufferWritable(Buffer.alloc(26));
                 
                 frame.on('end', function() {
                     beforeSendResponse();
@@ -214,7 +214,7 @@ describe('Client', function() {
             
             server._send = function(frame, beforeSendResponse) {
                 assert(frame.headers.destination === '/test');
-                var writable = new BufferWritable(new Buffer(26));
+                var writable = new BufferWritable(Buffer.alloc(26));
                 frame.on('end', function() {
                     beforeSendResponse();
                     done();
@@ -234,7 +234,7 @@ describe('Client', function() {
         it('should send a message with the specified body', function(done) {
             server._send = function(frame, beforeSendResponse) {
                 assert(frame.headers.destination === '/test');
-                var writable = new BufferWritable(new Buffer(26));
+                var writable = new BufferWritable(Buffer.alloc(26));
                 frame.on('end', function() {
                     beforeSendResponse();
                     assert(writable.getWrittenSlice().toString() === 'abcdefgh');
@@ -252,7 +252,7 @@ describe('Client', function() {
         it('should treat the second argument as the destination if it\'s a string value', function(done) {
             server._send = function(frame, beforeSendResponse) {
                 assert(frame.headers.destination === '/test');
-                var writable = new BufferWritable(new Buffer(26));
+                var writable = new BufferWritable(Buffer.alloc(26));
                 frame.on('end', function() {
                     beforeSendResponse();
                     done();
@@ -268,7 +268,7 @@ describe('Client', function() {
 
         it('should call the callback', function(done) {
             server._send = function(frame, beforeSendResponse) {
-                var writable = new BufferWritable(new Buffer(26));
+                var writable = new BufferWritable(Buffer.alloc(26));
                 frame.on('end', function() {
                     beforeSendResponse();
                 });
@@ -409,7 +409,7 @@ describe('Client', function() {
                     assert(message.headers.subscription == subscription.getId());
                     assert(message.headers['message-id'] == '1');
                     
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     
                     message.on('end', function() {
                         
@@ -513,7 +513,7 @@ describe('Client', function() {
                     
                     messages.push(message);
                     
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     
                     message.on('end', function() {
                         
@@ -588,7 +588,7 @@ describe('Client', function() {
                 
                 client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
                     
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     
                     message.on('end', function() {
                         message.ack();

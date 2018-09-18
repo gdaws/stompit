@@ -17,12 +17,12 @@ describe('BufferWritable', function(){
         });
         
         it('should have zero bytes written', function(){
-            assert((new BufferWritable(new Buffer(1))).getBytesWritten() === 0);
+            assert((new BufferWritable(Buffer.alloc(1))).getBytesWritten() === 0);
         });
         
         it('should have uncloned buffer object', function(){
             
-            var buffer = new Buffer(0);
+            var buffer = Buffer.alloc(0);
             var writable = new BufferWritable(buffer);
             
             assert(writable.getBuffer() === buffer);
@@ -34,7 +34,7 @@ describe('BufferWritable', function(){
         var writable;
         
         beforeEach(function(){
-            writable = new BufferWritable(new Buffer(32)); 
+            writable = new BufferWritable(Buffer.alloc(32)); 
         });
         
         it('should have bytes written', function(){

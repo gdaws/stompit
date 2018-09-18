@@ -32,7 +32,7 @@ function Frame(command, headers, streamOptions) {
   this.command = command;
   this.headers = headers;
 
-  this._body = new Buffer(0);
+  this._body = Buffer.alloc(0);
 
   this._finished = false;
 

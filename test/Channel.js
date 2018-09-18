@@ -81,7 +81,7 @@ describe('Channel', function() {
                     
                     assert(frame.headers.destination === '/queue/test!');
                     
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     frame.on('end', function() {
                         assert(writable.getWrittenSlice().toString() === 'hello');
                         usedSecondServer = true;
@@ -106,7 +106,7 @@ describe('Channel', function() {
                     
                     assert(frame.headers.destination === '/queue/test!');
                     
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     frame.on('end', function() {
                         assert(writable.getWrittenSlice().toString() === 'hello');
                         beforeSendResponse();
@@ -120,7 +120,7 @@ describe('Channel', function() {
             
             var createBody = function() {
                 countCreateBody += 1;
-                return new BufferReadable(new Buffer('hello'));
+                return new BufferReadable(Buffer.from('hello'));
             };
             
             chan.send('/queue/test!', createBody, function() {
@@ -137,7 +137,7 @@ describe('Channel', function() {
             server2.on('connection', function() {
                 server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
                     assert(frame.headers.destination === '/queue/test!');
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     frame.on('end', function() {
                         assert(writable.getWrittenSlice().toString() === 'hello');
                         beforeSendResponse();
@@ -186,7 +186,7 @@ describe('Channel', function() {
                 assert(connections < 2);
                 
                 server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
-                    var writable = new BufferWritable(new Buffer(26));
+                    var writable = new BufferWritable(Buffer.alloc(26));
                     frame.on('end', function() {
                         
                         var str = writable.getWrittenSlice().toString();
@@ -244,7 +244,7 @@ describe('Channel', function() {
                     return;
                 }
                 
-                var writable = new BufferWritable(new Buffer(26));
+                var writable = new BufferWritable(Buffer.alloc(26));
                 
                 message.on('end', function() {
                     
@@ -350,7 +350,7 @@ describe('Channel', function() {
                             
                             server2.setCommandHandler('SEND', function(frame, beforeSendResponse) {
                                 countSends += 1;
-                                var writable = new BufferWritable(new Buffer(26));
+                                var writable = new BufferWritable(Buffer.alloc(26));
                                 frame.pipe(writable);
                                 beforeSendResponse();
                             });
@@ -377,8 +377,8 @@ describe('Channel', function() {
                 
                 transaction
                  .send('/queue/test/', 'message1')
-                 .send('/queue/test/', new Buffer('message2'))
-                 .send('/queue/test/', function() {return new BufferReadable(new Buffer('message3'));})
+                 .send('/queue/test/', Buffer.from('message2'))
+                 .send('/queue/test/', function() {return new BufferReadable(Buffer.from('message3'));})
                  .commit(function() {
                     gotCallback = true;
                     checkDone();

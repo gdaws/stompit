@@ -35,7 +35,7 @@ function Frame(stream, command, headers, streamOptions, errMsg) {
   this._stream = stream;
   this._errMsg = errMsg;
 
-  this._body = new Buffer(0);
+  this._body = Buffer.alloc(0);
 
   this._finished = false;
 

@@ -15,12 +15,12 @@ describe('BufferReadable', function(){
     });
     
     it('should have zero bytes read', function(){
-        assert((new BufferReadable(new Buffer(1))).getBytesRead() === 0);
+        assert((new BufferReadable(Buffer.alloc(1))).getBytesRead() === 0);
     });
     
     it('should have uncloned buffer object', function(){
         
-        var buffer = new Buffer(0);
+        var buffer = Buffer.alloc(0);
         var readable = new BufferReadable(buffer);
         
         assert(readable.getBuffer() === buffer);
@@ -30,7 +30,7 @@ describe('BufferReadable', function(){
         
         it('should read bytes', function(){
             
-            var buffer = new Buffer('hello');
+            var buffer = Buffer.from('hello');
             var readable = new BufferReadable(buffer);
             
             assert(readable.read(5).toString() === 'hello');
@@ -39,7 +39,7 @@ describe('BufferReadable', function(){
         
         it('should push EOF chunk', function(done){
             
-            var buffer = new Buffer('hello');
+            var buffer = Buffer.from('hello');
             var readable = new BufferReadable(buffer);
             
             readable.on('end', function(){

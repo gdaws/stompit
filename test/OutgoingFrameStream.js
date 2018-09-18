@@ -16,7 +16,7 @@ describe('OutgoingFrameStream', function(){
     var output;
     
     beforeEach(function(){
-        dest = new Buffer(256);
+        dest = Buffer.alloc(256);
         writable = new BufferWritable(dest);
         output = new OutgoingFrameStream(writable);
         output.setVersion('1.1');

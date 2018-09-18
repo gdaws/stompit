@@ -49,7 +49,7 @@ describe('IncomingFrameStream', function() {
                 return;
             }
             
-            var writable = new BufferWritable(new Buffer(20));
+            var writable = new BufferWritable(Buffer.alloc(20));
             
             writable.on('finish', function() {
                 callback(null, frame, writable.getWrittenSlice()); 
@@ -74,7 +74,7 @@ describe('IncomingFrameStream', function() {
             
             while(lengthRemaining > 0 && drained) {
                 var size = Math.min(lengthRemaining, maxChunkSize);
-                var chunk = new Buffer(size);
+                var chunk = Buffer.alloc(size);
                 md5sum.update(chunk);
                 drained = writable.write(chunk);
                 lengthRemaining -= size;
