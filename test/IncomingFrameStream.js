@@ -355,6 +355,25 @@ describe('IncomingFrameStream', function() {
                     });
                 });
             });
+
+            it('should decode a multibyte character spread across multiple stream chunks', function(done) {
+
+                stream.write('CONNECT\n\n');
+
+                stream.write(Buffer.from([0xE2]));
+                stream.write(Buffer.from([0x82]));
+                stream.write(Buffer.from([0xAC, 0x00]));
+
+                readFrame(stream, function(error, frame) {
+                    frame.readString('utf-8', function(error, body) {
+                        assert(!error);
+                        assert(body.length === 1);
+                        assert(body == '€');
+                        done();
+                    });
+                });
+
+            });
         });
     });
     
