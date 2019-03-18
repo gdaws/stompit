@@ -9,9 +9,9 @@ stream.Duplex transport, such as for example tls.TLSSocket.
 
 An example of sending and receiving a message using the client API:
 ```javascript
-var stompit = require('stompit');
+const stompit = require('stompit');
 
-var connectOptions = {
+const connectOptions = {
   'host': 'localhost',
   'port': 61613,
   'connectHeaders':{
@@ -29,16 +29,16 @@ stompit.connect(connectOptions, function(error, client) {
     return;
   }
   
-  var sendHeaders = {
+  const sendHeaders = {
     'destination': '/queue/test',
     'content-type': 'text/plain'
   };
   
-  var frame = client.send(sendHeaders);
+  const frame = client.send(sendHeaders);
   frame.write('hello');
   frame.end();
   
-  var subscribeHeaders = {
+  const subscribeHeaders = {
     'destination': '/queue/test',
     'ack': 'client-individual'
   };
