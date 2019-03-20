@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var IncomingFrameStream = require('../index').IncomingFrameStream;
+var IncomingFrameStream = require('../lib/index').IncomingFrameStream;
 var BufferWritable      = require('../lib/util/buffer/BufferWritable');
 var NullWritable        = require('../lib/util/NullWritable');
 var net                 = require('net');

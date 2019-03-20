@@ -16,6 +16,7 @@
   "engines": {
     "node": ">=0.10"
   },
+  "main": "lib/index.js",
   "dependencies": {
     "qs": "~3.1.0",
     "object-assign": "^2.0.0"

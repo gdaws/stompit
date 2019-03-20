@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var OutgoingFrameStream = require('../index').OutgoingFrameStream;
+var OutgoingFrameStream = require('../lib/index').OutgoingFrameStream;
 var BufferWritable      = require('../lib/util/buffer/BufferWritable');
 var stream              = require('stream');
 var assert              = require('assert');

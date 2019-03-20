@@ -1,5 +1,5 @@
 
-var Client = require('../index').Client;
+var Client = require('../lib/index').Client;
 var Transport = require('./mock/Transport');
 var OutgoingFrameStream = require('./mock/OutgoingFrameStream');
 var OutgoingFrameStreamFailing = require('./mock/OutgoingFrameStreamFailing');

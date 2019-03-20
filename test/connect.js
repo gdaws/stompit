@@ -8,8 +8,8 @@ var net         = require('net');
 var tls         = require('tls');
 var fs          = require('fs');
 var path        = require('path');
-var Client      = require('../index').Client;
-var connect     = require('../index').connect;
+var Client      = require('../lib/index').Client;
+var connect     = require('../lib/index').connect;
 var Server      = require('../lib/Server');
 var assert      = require('assert');
 

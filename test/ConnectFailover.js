@@ -4,7 +4,7 @@
  * MIT licensed
  */
 
-var ConnectFailover = require('../index').ConnectFailover;
+var ConnectFailover = require('../lib/index').ConnectFailover;
 var assign          = require('object-assign');
 var MemorySocket    = require('../lib/util/MemorySocket');
 var Server          = require('../lib/Server');
