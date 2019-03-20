@@ -1,7 +1,7 @@
 {
   "name": "stompit",
   "description": "STOMP client library for node.js",
-  "version": "0.26.0",
+  "version": "1.0.0",
   "keywords": [
     "stomp",
     "messaging",
@@ -18,8 +18,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "qs": "~3.1.0",
-    "object-assign": "^2.0.0"
+    "qs": "~3.1.0"
   },
   "devDependencies": {
     "jshint": "^2.10.2",

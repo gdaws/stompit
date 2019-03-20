@@ -1,6 +1,5 @@
 
 var ConnectFailover = require('../lib/index').ConnectFailover;
-var assign          = require('object-assign');
 var MemorySocket    = require('../lib/util/MemorySocket');
 var Server          = require('../lib/Server');
 var assert          = require('assert');
@@ -123,7 +122,7 @@ describe('ConnectFailover', function() {
                 createConnector(0),
                 createConnector(1),
                 createConnector(2)
-            ], assign(defaultOptions, {
+            ], Object.assign(defaultOptions, {
                 randomize: false
             }));
             
@@ -155,7 +154,7 @@ describe('ConnectFailover', function() {
                 })
             ];
             
-            var failover = new ConnectFailover(servers, assign(defaultOptions, {
+            var failover = new ConnectFailover(servers, Object.assign(defaultOptions, {
                 maxReconnects: 3,
                 useExponentialBackOff: false,
                 initialReconnectDelay: 1
@@ -180,7 +179,7 @@ describe('ConnectFailover', function() {
                 createConnector(null, {
                     connectAfter: 8
                 })
-            ], assign(defaultOptions, {
+            ], Object.assign(defaultOptions, {
                 maxReconnects: -1,
                 initialReconnectDelay: 1,
                 useExponentialBackOff: false
@@ -198,7 +197,7 @@ describe('ConnectFailover', function() {
                 createConnector(null, {
                     connectAfter: Infinity
                 })
-            ], assign(defaultOptions, {
+            ], Object.assign(defaultOptions, {
                 maxReconnects: 2,
                 initialReconnectDelay: 1,
                 useExponentialBackOff: false
@@ -216,7 +215,7 @@ describe('ConnectFailover', function() {
                 createConnector(null, {
                     connectError: 'invalid login'
                 })
-            ], assign(defaultOptions, {
+            ], Object.assign(defaultOptions, {
                 maxReconnects: -1
             }));
             
