@@ -1,8 +1,3 @@
-/*
- * Test stompit.connect
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var net         = require('net');
 var tls         = require('tls');

@@ -1,8 +1,3 @@
-/*
- * Test stompit.Server
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var Client          = require('../lib/Client');
 var Server          = require('../lib/Server');

@@ -1,8 +1,3 @@
-/*
- * Test stompit.MemorySocket
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var MemorySocket    = require('../../lib/util/MemorySocket');
 var assert          = require('assert');

@@ -1,8 +1,3 @@
-/*
- * Test stompit.ConnectFailover
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var ConnectFailover = require('../lib/index').ConnectFailover;
 var assign          = require('object-assign');

@@ -1,8 +1,3 @@
-/*
- * Test stompit.Channel
- * Copyright (c) 2014 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var Channel         = require('../lib/index').Channel;
 var ConnectFailover = require('../lib/index').ConnectFailover;

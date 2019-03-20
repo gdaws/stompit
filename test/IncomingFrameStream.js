@@ -1,8 +1,3 @@
-/*
- * Test stompit.IncomingFrameStream
- * Copyright (c) 2014 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var IncomingFrameStream = require('../lib/index').IncomingFrameStream;
 var BufferWritable      = require('../lib/util/buffer/BufferWritable');

@@ -1,8 +1,3 @@
-/*
- * Test stompit.BufferReadWritable
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var BufferReadWritable  = require('../../../lib/util/buffer/BufferReadWritable');
 var BufferWritable      = require('../../../lib/util/buffer/BufferWritable');

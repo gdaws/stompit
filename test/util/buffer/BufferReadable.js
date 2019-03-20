@@ -1,8 +1,3 @@
-/*
- * Test stompit.BufferReadable
- * Copyright (c) 2013 Graham Daws <graham.daws@gmail.com>
- * MIT licensed
- */
 
 var BufferReadable  = require('../../../lib/util/buffer/BufferReadable');
 var stream          = require('stream');
