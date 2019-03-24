@@ -1,53 +1,57 @@
-var util    = require('util');
-var Stream  = require('stream');
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-function OutgoingFrameStream() {
-  this._version = null;
-  this._finished = false;
-  this._frames = [];
+const { Writable } = require('stream');
+
+class OutgoingFrameStream {
+
+  constructor() {
+
+    this._version = null;
+    this._finished = false;
+    this._frames = [];
+  }
+
+  setVersion(value) {
+    this.value = value;
+  }
+
+  frame(command, headers, streamOptions) {
+    const frame = new Frame(command, headers, streamOptions);
+    this._frames.push(frame);
+    return frame;
+  }
+
+  finish() {
+    this._finished = true;
+  }
+
+  hasFinished() {
+    return this._finished;
+  }
 }
 
-OutgoingFrameStream.prototype.setVersion = function(value) {
-  this.value = value;
-};
+class Frame extends Writable {
 
-OutgoingFrameStream.prototype.frame = function(command, headers, streamOptions) {
-  var frame = new Frame(command, headers, streamOptions);
-  this._frames.push(frame);
-  return frame;
-};
+  constructor(command, headers, streamOptions) {
 
-OutgoingFrameStream.prototype.finish = function() {
-  this._finished = true;
-};
+    super(streamOptions);
 
-OutgoingFrameStream.prototype.hasFinished = function() {
-  return this._finished;
-};
+    this.command = command;
+    this.headers = headers;
 
-function Frame(command, headers, streamOptions) {
+    this._body = Buffer.alloc(0);
 
-  Stream.Writable.call(this, streamOptions);
+    this._finished = false;
 
-  this.command = command;
-  this.headers = headers;
+    this.once('finish', () => {
+      this._finished = true;
+    });
+  }
 
-  this._body = Buffer.alloc(0);
-
-  this._finished = false;
-
-  var self = this;
-
-  this.once('finish', function() {
-    self._finished = true;
-  });
+  _write(chunk, encoding, callback) {
+    this._body = Buffer.concat([this._body, chunk]);
+    callback();
+  }
 }
-
-util.inherits(Frame, Stream.Writable);
-
-OutgoingFrameStream.prototype._write = function(chunk, encoding, callback) {
-  this._body = Buffer.concat([this._body, chunk]);
-  callback();
-};
 
 module.exports = OutgoingFrameStream;

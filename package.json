@@ -14,7 +14,7 @@
     "url": "https://github.com/gdaws/node-stomp.git"
   },
   "engines": {
-    "node": ">=6.17.0"
+    "node": ">=8.6.0"
   },
   "main": "lib/index.js",
   "dependencies": {

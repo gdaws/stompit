@@ -1,18 +1,17 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var Channel         = require('../lib/index').Channel;
-var ConnectFailover = require('../lib/index').ConnectFailover;
-var Client          = require('../lib/index').Client;
-var MemorySocket    = require('../lib/util/MemorySocket');
-var BufferWritable  = require('../lib/util/buffer/BufferWritable');
-var BufferReadable  = require('../lib/util/buffer/BufferReadable');
-var NullWritable    = require('../lib/util/NullWritable');
-var Server          = require('../lib/Server');
-var assert          = require('assert');
+const { Channel, ConnectFailover } = require('../lib/index');
+const MemorySocket = require('../lib/util/MemorySocket');
+const BufferWritable = require('../lib/util/buffer/BufferWritable');
+const BufferReadable = require('../lib/util/buffer/BufferReadable');
+const NullWritable = require('../lib/util/NullWritable');
+const Server = require('../lib/Server');
+const assert = require('assert');
 
-var createConnector = function(serverSocket) {
+const createConnector = function(serverSocket) {
     return {
         connect: function(options, callback) {
-            var socket = serverSocket.getPeerSocket();
+            const socket = serverSocket.getPeerSocket();
             process.nextTick(callback);
             return socket;
         }
@@ -285,7 +284,7 @@ describe('Channel', function() {
                     });
                 });
                 
-                server2.setCommandHandler('UNSUBSCRIBE', function(frame, beforeSendResponse) {
+                server2.setCommandHandler('UNSUBSCRIBE', function(frame) {
                     assert(frame.headers.id === subscriptionId);
                     done();
                 });

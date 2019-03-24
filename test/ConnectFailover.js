@@ -1,8 +1,11 @@
+/*jslint node: true, indent: 2, camelcase: true, esversion: 9 */
 
-var ConnectFailover = require('../lib/index').ConnectFailover;
-var MemorySocket    = require('../lib/util/MemorySocket');
-var Server          = require('../lib/Server');
-var assert          = require('assert');
+const { ConnectFailover } = require('../lib/index');
+const parseFailoverUri = require('../lib/connect-failover/parseFailoverUri');
+const parseServerUri = require('../lib/connect-failover/parseServerUri');
+const MemorySocket = require('../lib/util/MemorySocket');
+const Server = require('../lib/Server');
+const assert = require('assert');
 
 var createConnector = function(name, options) {
     
@@ -228,8 +231,7 @@ describe('ConnectFailover', function() {
     
     describe("#_parseConnectFailoverUri", function() {
         
-        var failover = new ConnectFailover([], {});
-        var parse = failover._parseFailoverUri.bind(failover);
+        var parse = parseFailoverUri;
         
         it('should parse a simple uri', function() {
             var ret = parse('failover:(primary,secondary)');
@@ -314,8 +316,7 @@ describe('ConnectFailover', function() {
 
     describe('#_parseServerUri', function() {
         
-        var failover = new ConnectFailover([], {});
-        var parse = failover._parseServerUri.bind(failover);
+        var parse = parseServerUri;
         
         it('should parse a typical uri', function() {
             var ret = parse('tcp://localhost:61613');

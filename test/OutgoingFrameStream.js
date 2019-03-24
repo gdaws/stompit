@@ -1,8 +1,9 @@
+/*jslint node: true, indent: 2, camelcase: true, esversion: 9 */
 
-var OutgoingFrameStream = require('../lib/index').OutgoingFrameStream;
-var BufferWritable      = require('../lib/util/buffer/BufferWritable');
-var stream              = require('stream');
-var assert              = require('assert');
+const OutgoingFrameStream = require('../lib/OutgoingFrameStream');
+const BufferWritable = require('../lib/util/buffer/BufferWritable');
+const stream = require('stream');
+const assert = require('assert');
 
 describe('OutgoingFrameStream', function(){
     

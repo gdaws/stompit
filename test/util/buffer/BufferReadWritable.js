@@ -1,13 +1,13 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var BufferReadWritable  = require('../../../lib/util/buffer/BufferReadWritable');
-var BufferWritable      = require('../../../lib/util/buffer/BufferWritable');
-var assert              = require('assert');
+const BufferReadWritable = require('../../../lib/util/buffer/BufferReadWritable');
+const assert = require('assert');
 
 describe('BufferReadWritable', function(){
     
     it('should be readable after write', function(){
         
-        var iostream = new BufferReadWritable(Buffer.alloc(2));
+        const iostream = new BufferReadWritable(Buffer.alloc(2));
         
         assert(iostream.write('A'));
         
@@ -16,7 +16,7 @@ describe('BufferReadWritable', function(){
         
         assert(iostream.getBytesWritable() === 1);
         
-        var chunk = iostream.read();
+        const chunk = iostream.read();
         
         assert(chunk.length === 1);
         assert(chunk[0] === 'A'.charCodeAt(0));
@@ -27,7 +27,7 @@ describe('BufferReadWritable', function(){
     
     it('should recyle the buffer', function(done){
         
-        var iostream = new BufferReadWritable(Buffer.alloc(2), {
+        const iostream = new BufferReadWritable(Buffer.alloc(2), {
             highWaterMark: 0
         });
         
@@ -36,11 +36,11 @@ describe('BufferReadWritable', function(){
             assert(iostream.getBytesReadable() === 2);
             assert(iostream.getBytesWritten() === 2);
             
-            var chunk1 = iostream.read(1);
+            const chunk1 = iostream.read(1);
                     
             iostream.write('C', function(){
                 
-                var chunk2 = iostream.read(2);
+                const chunk2 = iostream.read(2);
                 
                 assert(chunk1.length === 1);
                 assert(chunk2.length === 2);
@@ -61,14 +61,12 @@ describe('BufferReadWritable', function(){
     
     it('should be able to transfer a chunk that is bigger than the buffer', function(done){
         
-        var iostream = new BufferReadWritable(Buffer.alloc(2), {
+        const iostream = new BufferReadWritable(Buffer.alloc(2), {
             highWaterMark: 0
         });
         
-        var checkBuffer = Buffer.alloc(9);
-        
-        var finishedWriting = false;
-        var finishedReading = false;
+        let finishedWriting = false;
+        let finishedReading = false;
         
         iostream.write('ABCDEFGHI', function(){
             
@@ -85,7 +83,7 @@ describe('BufferReadWritable', function(){
         
         iostream.on('readable', function(){
            
-            var chunk = iostream.read(9);
+            const chunk = iostream.read(9);
             
             if(chunk !== null){
                 

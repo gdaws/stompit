@@ -1,77 +1,79 @@
-var util    = require('util');
-var Stream  = require('stream');
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-function OutgoingFrameStream(errMsg) {
-  this._errMsg = errMsg;
-  this._version = null;
-  this._finished = false;
-  this._frame = null;
+const { Writable }  = require('stream');
+
+class OutgoingFrameStream {
+
+  constructor(errMsg) {
+    this._errMsg = errMsg;
+    this._version = null;
+    this._finished = false;
+    this._frame = null;
+  }
+
+  setVersion(value) {
+    this.value = value;
+  }
+
+  frame(command, headers, streamOptions) {
+    const frame = new Frame(this, command, headers, streamOptions, this._errMsg);
+    this._frame = frame;
+    return frame;
+  }
+
+  finish() {
+    this._finished = true;
+  }
+
+  hasFinished() {
+    return this._finished;
+  }
+
+  _write(chunk, encoding, callback) {
+    this._body = Buffer.concat([this._body, chunk]);
+    callback();
+  }
 }
 
-OutgoingFrameStream.prototype.setVersion = function(value) {
-  this.value = value;
-};
+class Frame extends Writable {
 
-OutgoingFrameStream.prototype.frame = function(command, headers, streamOptions) {
-  var frame = new Frame(this, command, headers, streamOptions, this._errMsg);
-  this._frame = frame;
-  return frame;
-};
+  constructor(stream, command, headers, streamOptions, errMsg) {
 
-OutgoingFrameStream.prototype.finish = function() {
-  this._finished = true;
-};
+    super(streamOptions);
 
-OutgoingFrameStream.prototype.hasFinished = function() {
-  return this._finished;
-};
+    this.command = command;
+    this.headers = headers;
+    this._stream = stream;
+    this._errMsg = errMsg;
 
-function Frame(stream, command, headers, streamOptions, errMsg) {
+    this._body = Buffer.alloc(0);
 
-  Stream.Writable.call(this, streamOptions);
+    this._finished = false;
 
-  this.command = command;
-  this.headers = headers;
-  this._stream = stream;
-  this._errMsg = errMsg;
+    this.once('finish', () => {
+      this._finished = true;
+    });
+  }
 
-  this._body = Buffer.alloc(0);
+  write() {
+    this.emit('error', this._errMsg ? new Error(this._errMsg) : null);
+  }
 
-  this._finished = false;
+  end(cb) {
+    this._endFrame(cb);
+  }
 
-  var self = this;
+  _endFrame(cb) {
 
-  this.once('finish', function() {
-    self._finished = true;
-  });
+    this.write('\x00\n', 'utf-8', (error) => {
+
+      if (cb) {
+        cb(error);
+      }
+
+      Stream.Writable.prototype.end.apply(this);
+    });
+  }
 }
-
-util.inherits(Frame, Stream.Writable);
-
-Frame.prototype._write = function() {
-  this.emit('error', this._errMsg ? new Error(this._errMsg) : null);
-};
-
-Frame.prototype.end = function(cb) {
-  this._endFrame(cb);
-};
-
-Frame.prototype._endFrame = function(cb) {
-  var self = this;
-
-  this.write('\x00\n', 'utf-8', function(error) {
-
-    if (cb) {
-      cb(error);
-    }
-
-    Stream.Writable.prototype.end.apply(self);
-  });
-};
-
-OutgoingFrameStream.prototype._write = function(chunk, encoding, callback) {
-  this._body = Buffer.concat([this._body, chunk]);
-  callback();
-};
 
 module.exports = OutgoingFrameStream;

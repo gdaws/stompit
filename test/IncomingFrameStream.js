@@ -1,10 +1,11 @@
+/*jslint node: true, indent: 2, camelcase: true, esversion: 9 */
 
-var IncomingFrameStream = require('../lib/index').IncomingFrameStream;
-var BufferWritable      = require('../lib/util/buffer/BufferWritable');
-var NullWritable        = require('../lib/util/NullWritable');
-var net                 = require('net');
-var crypto              = require('crypto');
-var assert              = require('assert');
+const IncomingFrameStream = require('../lib/IncomingFrameStream');
+const BufferWritable = require('../lib/util/buffer/BufferWritable');
+const NullWritable = require('../lib/util/NullWritable');
+const net = require('net');
+const crypto = require('crypto');
+const assert = require('assert');
 
 describe('IncomingFrameStream', function() {
     

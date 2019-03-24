@@ -1,16 +1,17 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var DuplexStream = require('./DuplexStream');
-var util = require('util');
+const DuplexStream = require('./DuplexStream');
 
-function Transport() {
-  DuplexStream.apply(this, arguments);
-  this._destroyed = false;
+class Transport extends DuplexStream {
+
+  constructor(...args) {
+    super(...args);
+    this._destroyed = false;
+  }
+
+  destroy() {
+    this._destroyed = true;
+  }
 }
-
-util.inherits(Transport, DuplexStream);
-
-Transport.prototype.destroy = function() {
-  this._destroyed = true;
-};
 
 module.exports = Transport;

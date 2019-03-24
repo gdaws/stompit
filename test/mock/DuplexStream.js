@@ -1,21 +1,22 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var util    = require('util');
-var Stream  = require('stream');
+const { Duplex } = require('stream');
 
-function DuplexStream() {
-  Stream.Duplex.apply(this, arguments);
-  this._written = Buffer.alloc(0);
+class DuplexStream extends Duplex {
+
+  constructor(...args) {
+    super(...args);
+    this._written = Buffer.alloc(0);
+  }
+
+  _read() {
+
+  }
+
+  _write(chunk, encoding, callback) {
+    this._body = Buffer.concat([this._body, chunk]);
+    callback();
+  }
 }
-
-util.inherits(DuplexStream, Stream.Duplex);
-
-DuplexStream.prototype._read = function() {
-
-};
-
-DuplexStream.prototype._write = function(chunk, encoding, callback) {
-  this._body = Buffer.concat([this._body, chunk]);
-  callback();
-};
 
 module.exports = DuplexStream;

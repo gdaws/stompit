@@ -1,11 +1,12 @@
+/*jslint node: true, indent: 2, camelcase: true, esversion: 9 */
 
-var Client          = require('../lib/Client');
-var Server          = require('../lib/Server');
-var MemorySocket    = require('../lib/util/MemorySocket');
-var BufferWritable  = require('../lib/util/buffer/BufferWritable');
-var assert          = require('assert');
+const Client = require('../lib/Client');
+const Server = require('../lib/Server');
+const MemorySocket = require('../lib/util/MemorySocket');
+const BufferWritable = require('../lib/util/buffer/BufferWritable');
+const assert = require('assert');
 
-var fail = function(){assert(false);};
+const fail = function(){assert(false);};
 
 describe('Server', function(){
     

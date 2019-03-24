@@ -1,13 +1,14 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var  Client         = require('../lib/index').Client;
-var Server          = require('../lib/Server');
-var MemorySocket    = require('../lib/util/MemorySocket');
-var BufferWritable  = require('../lib/util/buffer/BufferWritable');
-var NullWritable    = require('../lib/util/NullWritable');
-var assert          = require('assert');
+const { Client } = require('../lib/index');
+const Server = require('../lib/Server');
+const MemorySocket = require('../lib/util/MemorySocket');
+const BufferWritable = require('../lib/util/buffer/BufferWritable');
+const NullWritable = require('../lib/util/NullWritable');
+const assert = require('assert');
 
-var fail = function() {assert(false);};
-var noop = function() {};
+const fail = function() {assert(false);};
+const noop = function() {};
 
 describe('Client', function() {
     
@@ -122,7 +123,7 @@ describe('Client', function() {
         it('should cause an error on sending any subsequent frame', function(done) {
             client.connect('localhost', function() {
                 
-                server._send = function(frame, beforeSendResponse) {};
+                server._send = function() {};
                 
                 client.on('error', function(e) {
                     assert(e.message === 'cannot send frame on closed stream');
@@ -354,7 +355,7 @@ describe('Client', function() {
         
         it('should subscribe to a destination', function(done) {
                 
-            server._subscribe = function(frame, beforeSendResponse) {
+            server._subscribe = function() {
                 done();
             };
             
@@ -367,7 +368,7 @@ describe('Client', function() {
         
         it('should treat the first argument as the destination if it\'s a string value', function(done) {
             
-            server._subscribe = function(frame, beforeSendResponse) {
+            server._subscribe = function() {
                 done();
             };
             
@@ -660,7 +661,7 @@ describe('Client', function() {
                     client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
                         
                         message.on('end', function() {
-                            message.ack(function(error) {
+                            message.ack(function() {
                                 done();
                             });
                         });
@@ -889,7 +890,7 @@ describe('Client', function() {
                         
                         var numMessages = 0;
                         
-                        var subscription = client.subscribe(headers, function(error, message) {
+                        client.subscribe(headers, function(error, message) {
                             
                             assert(!error);
                             assert(message);
@@ -968,7 +969,7 @@ describe('Client', function() {
                         
                         var numMessages = 0;
                         
-                        var subscription = client.subscribe(headers, function(error, message) {
+                        client.subscribe(headers, function(error, message) {
                             
                             assert(!error);
                             assert(message);
@@ -1000,7 +1001,7 @@ describe('Client', function() {
         
         it('should send a BEGIN frame', function(done) {
             
-            server._begin = function(frame, beforeSendResponse) {
+            server._begin = function() {
                 done();
             };
             
@@ -1014,7 +1015,7 @@ describe('Client', function() {
         
         it('should allow a transaction-id argument', function(done) {
             
-            server._begin = function(frame, beforeSendResponse) {
+            server._begin = function(frame) {
                 assert(frame.headers.transaction === 'myTransactionID');
                 done();
             };
@@ -1029,7 +1030,7 @@ describe('Client', function() {
         
         it('should allow a header argument', function(done) {
             
-            server._begin = function(frame, beforeSendResponse) {
+            server._begin = function(frame) {
                 assert(frame.headers.transaction === 'transaction_1');
                 assert(frame.headers.test === '1');
                 done();
@@ -1048,7 +1049,7 @@ describe('Client', function() {
         
         it('should generate a transaction id if the transaction header is missing from the headers object', function(done) {
             
-            server._begin = function(frame, beforeSendResponse) {
+            server._begin = function(frame) {
                 assert(frame.headers.transaction === '1');
                 assert(frame.headers.test === '2');
                 done();
@@ -1126,8 +1127,8 @@ describe('Client', function() {
             describe('#commit', function() {
                 it('should send a COMMIT frame with a transaction header', function(done) {
                     
-                    server._begin = function(frame, beforeSendResponse) {beforeSendResponse();};
-                    server._abort = function(frame) {};
+                    server._begin = function(_frame, beforeSendResponse) {beforeSendResponse();};
+                    server._abort = function() {};
                     
                     server._commit = function(frame) {
                         assert(frame.headers.transaction === '1');

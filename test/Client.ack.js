@@ -1,13 +1,14 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var Client = require('../lib/index').Client;
-var Transport = require('./mock/Transport');
-var OutgoingFrameStream = require('./mock/OutgoingFrameStream');
-var OutgoingFrameStreamFailing = require('./mock/OutgoingFrameStreamFailing');
-var assert = require('assert');
+const { Client } = require('../lib/index');
+const Transport = require('./mock/Transport');
+const OutgoingFrameStream = require('./mock/OutgoingFrameStream');
+const OutgoingFrameStreamFailing = require('./mock/OutgoingFrameStreamFailing');
+const assert = require('assert');
 
 describe('Client.ack', function() {
 
-  var client, transport, framesOut, framesIn;
+  var client, transport, framesOut;
 
   beforeEach(function() {
 
@@ -101,7 +102,7 @@ describe('Client.ack', function() {
 
 describe('Client.nack', function() {
 
-  var client, transport, framesOut, framesIn;
+  var client, transport, framesOut;
 
   beforeEach(function() {
 

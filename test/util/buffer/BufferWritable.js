@@ -1,14 +1,15 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var BufferWritable  = require('../../../lib/util/buffer/BufferWritable');
-var stream          = require('stream');
-var assert          = require('assert');
+const BufferWritable  = require('../../../lib/util/buffer/BufferWritable');
+const { Writable } = require('stream');
+const assert = require('assert');
 
 describe('BufferWritable', function(){
     
     describe('#BufferWritable', function(){
         
         it('should inherit from stream.Writable', function(){
-            assert((new BufferWritable(1)) instanceof stream.Writable);
+            assert((new BufferWritable(1)) instanceof Writable);
         });
         
         it('should have zero bytes written', function(){
@@ -17,8 +18,8 @@ describe('BufferWritable', function(){
         
         it('should have uncloned buffer object', function(){
             
-            var buffer = Buffer.alloc(0);
-            var writable = new BufferWritable(buffer);
+            const buffer = Buffer.alloc(0);
+            const writable = new BufferWritable(buffer);
             
             assert(writable.getBuffer() === buffer);
         });
@@ -26,7 +27,7 @@ describe('BufferWritable', function(){
     
     describe('#write', function(){
         
-        var writable;
+        let writable;
         
         beforeEach(function(){
             writable = new BufferWritable(Buffer.alloc(32)); 

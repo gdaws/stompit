@@ -1,14 +1,14 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var net         = require('net');
-var tls         = require('tls');
-var fs          = require('fs');
-var path        = require('path');
-var Client      = require('../lib/index').Client;
-var connect     = require('../lib/index').connect;
-var Server      = require('../lib/Server');
-var assert      = require('assert');
+const net = require('net');
+const tls = require('tls');
+const fs = require('fs');
+const path = require('path');
+const { Client, connect } = require('../lib/index');
+const Server = require('../lib/Server');
+const assert = require('assert');
 
-var startServer = function(listener){
+const startServer = function(listener){
     var server = net.createServer({family: 4}, function(socket){
         var stomp = new Server(socket);
         listener(stomp);
@@ -17,14 +17,14 @@ var startServer = function(listener){
     return server;
 };
 
-var readFile = function(filename){
+const readFile = function(filename){
     if(filename[0] !== '/'){
         filename = path.dirname(module.filename) + path.sep + filename;
     }
     return fs.readFileSync(filename);
 };
 
-var startBrokenServer = function(){
+const startBrokenServer = function(){
     return startServer(function(stomp){
         stomp.on('error', function(){});
         stomp.destroy(new Error('unavailable'));
@@ -98,13 +98,13 @@ describe('connect(options, [connectionListener])', function(){
     
     it('should accept a transport connect function', function(done){
 
-        var transport = function(options, callback) {
+        var transport = function(options) {
             assert(options.host == '127.0.0.7');
             assert(options.port == 61619);
             done();
         };
         
-        var client = connect({
+        connect({
             host:'127.0.0.7',
             port: 61619,
             connect: transport

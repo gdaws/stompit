@@ -1,12 +1,13 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var Client = require('../lib/index').Client;
-var Transport = require('./mock/Transport');
-var OutgoingFrameStream = require('./mock/OutgoingFrameStream');
-var assert = require('assert');
+const { Client } = require('../lib/index');
+const Transport = require('./mock/Transport');
+const OutgoingFrameStream = require('./mock/OutgoingFrameStream');
+const assert = require('assert');
 
 describe('Client.connect', function() {
 
-  var client, transport, framesOut, framesIn;
+  var client, transport, framesOut;
 
   beforeEach(function() {
 

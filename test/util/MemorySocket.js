@@ -1,29 +1,30 @@
+/*jslint node: true, indent: 2, unused: true, maxlen: 160, camelcase: true, esversion: 9 */
 
-var MemorySocket    = require('../../lib/util/MemorySocket');
-var assert          = require('assert');
-var stream          = require('stream');
+const MemorySocket = require('../../lib/util/MemorySocket');
+const { Duplex } = require('stream');
+const assert = require('assert');
 
 describe('MemorySocket', function(){
     
     it('should inherit stream.Duplex', function(){
-        assert((new MemorySocket()) instanceof stream.Duplex);
+        assert((new MemorySocket()) instanceof Duplex);
     });
     
     describe('#getPeerSocket', function(){
         
         it('should inherit stream.Duplex', function(){
-            assert((new MemorySocket()).getPeerSocket() instanceof stream.Duplex);
+            assert((new MemorySocket()).getPeerSocket() instanceof Duplex);
         });
     });
     
     it('should write to the peer socket', function(done){
         
-        var local = new MemorySocket();
-        var peer = local.getPeerSocket();
+        const local = new MemorySocket();
+        const peer = local.getPeerSocket();
         
         peer.on('readable', function(){
             
-            var chunk = peer.read(9);
+            const chunk = peer.read(9);
             
             if(chunk !== null){
                 assert(chunk.length === 9);
@@ -39,12 +40,12 @@ describe('MemorySocket', function(){
     
     it('should read from the peer socket', function(done){
         
-        var local = new MemorySocket();
-        var peer = local.getPeerSocket();
+        const local = new MemorySocket();
+        const peer = local.getPeerSocket();
         
         local.on('readable', function(){
             
-            var chunk = local.read(9);
+            const chunk = local.read(9);
             
             if(chunk !== null){
                 assert(chunk.length === 9);
@@ -62,8 +63,7 @@ describe('MemorySocket', function(){
        
         it('should emit a close event', function(done){
             
-            var local = new MemorySocket(0, {allowHalfOpen: false});
-            var peer = local.getPeerSocket();
+            const local = new MemorySocket(0, {allowHalfOpen: false});
             
             local.on('close', function(){
                 done();
@@ -79,8 +79,8 @@ describe('MemorySocket', function(){
         
         it('should emit an end event on the peer socket', function(done){
             
-            var local = new MemorySocket();
-            var peer = local.getPeerSocket();
+            const local = new MemorySocket();
+            const peer = local.getPeerSocket();
             
             peer.on('end', function(){
                 done();
