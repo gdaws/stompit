@@ -250,7 +250,7 @@ describe('Channel', function() {
                         gotMessage2 = true;
                     }
                     
-                    message.ack();
+                    chan.ack(message);
                     
                     if (gotMessage1 && gotMessage2) {
                         done();

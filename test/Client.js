@@ -4,7 +4,6 @@ const { Client } = require('../lib/index');
 const Server = require('../lib/Server');
 const MemorySocket = require('../lib/util/MemorySocket');
 const BufferWritable = require('../lib/util/buffer/BufferWritable');
-const NullWritable = require('../lib/util/NullWritable');
 const assert = require('assert');
 
 const fail = function() {assert(false);};
@@ -409,265 +408,12 @@ describe('Client', function() {
                     
                     message.on('end', function() {
                         
-                        message.ack();
-                        
                         assert(writable.getWrittenSlice().toString() === 'hello');
                         
                         done();
                     });
                     
                     message.pipe(writable);
-                });
-            });
-        });
-        
-        it('should send one ACK for multiple messages in client ack mode', function(done) {
-            
-            server._subscribe = function(frame, beforeSendResponse) {
-                
-                var id = frame.headers.id;
-                
-                beforeSendResponse();
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 'a',
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 'b',
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 'c',
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 'd',
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 'e',
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-            };
-            
-            var acks = [];
-            
-            server._ack = function(frame, beforeSendResponse) {
-                
-                acks.push(frame.headers['message-id']);
-                
-                beforeSendResponse();
-                
-                switch(acks.length) {
-                    case 1:
-                        assert(acks[0] == 'b');
-                        break;
-                    case 3:
-                        assert(acks[2] == 'e');
-                        done();
-                        break;
-                    default: assert(false);
-                }
-            };
-            
-            server._nack = function(frame, beforeSendResponse) {
-                
-                acks.push(frame.headers['message-id']);
-                
-                beforeSendResponse();
-                
-                switch(acks.length) {
-                    case 2:
-                        assert(acks[1] == 'c');
-                        break;
-                    default: assert(false);
-                }
-            };
-            
-            server._unsubscribe = fail;
-            
-            client.connect('localhost', function() {
-                
-                var messages = [];
-                
-                client.subscribe({destination: '/test', ack: 'client'}, function(error, message) {
-                    
-                    messages.push(message);
-                    
-                    var writable = new BufferWritable(Buffer.alloc(26));
-                    
-                    message.on('end', function() {
-                        
-                        switch(messages.length) {
-                            case 2:
-                                messages[1].ack();
-                                messages[0].ack();
-                                // Ack for a and b
-                                break;
-                            case 5:
-                                messages[4].ack();
-                                messages[2].nack();
-                                // Nack for c
-                                messages[3].ack();
-                                // Ack for d and e
-                                break;
-                        }
-                    });
-                    
-                    message.pipe(writable);
-                });
-            });
-        });
-
-        it('should send one ACK for each message in client-individual ack mode', function(done) {
-            
-            server._subscribe = function(frame, beforeSendResponse) {
-                
-                var id = frame.headers.id;
-                
-                beforeSendResponse();
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 1,
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-                
-                server.sendFrame('MESSAGE', {
-                    'subscription': id,
-                    'message-id': 2,
-                    'destination': '/test',
-                    'content-type': 'text/plain'
-                }).end('hello');
-            };
-            
-            var acks = [];
-            
-            server._ack = function(frame, beforeSendResponse) {
-                
-                acks.push(frame.headers['message-id']);
-                
-                beforeSendResponse();
-                
-                switch(acks.length) {
-                    case 1:
-                        assert(acks[0] == 1);
-                        break;
-                    case 2:
-                        assert(acks[1] == 2);
-                        done();
-                        break;
-                    default: assert(false);
-                }
-            };
-            
-            server._nack = fail;
-            server._unsubscribe = fail;
-            
-            client.connect('localhost', function() {
-                
-                client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
-                    
-                    var writable = new BufferWritable(Buffer.alloc(26));
-                    
-                    message.on('end', function() {
-                        message.ack();
-                    });
-                    
-                    message.pipe(writable);
-                });
-            });
-        });
-        
-        describe('#ack', function() {
-
-            it('should accept a sendOptions object', function(done) {
-
-                server._subscribe = function(frame, beforeSendResponse) {
-                    
-                    var id = frame.headers.id;
-                    
-                    beforeSendResponse();
-                    
-                    server.sendFrame('MESSAGE', {
-                        'subscription': id,
-                        'message-id': 1,
-                    }).end();
-                };
-                
-                server._ack = function(frame, beforeSendResponse) {
-                    beforeSendResponse();
-                };
-
-                server._nack = fail;
-                server._unsubscribe = fail;
-
-                client.connect('localhost', function() {
-                    
-                    client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
-                        
-                        message.on('end', function() {
-                            message.ack({
-                                onReceipt: function() {
-                                    done();
-                                }
-                            });
-                        });
-                        
-                        message.pipe(new NullWritable());
-                    });
-                });
-            });
-
-            it('should accept a callback function', function(done) {
-
-                server._subscribe = function(frame, beforeSendResponse) {
-                    
-                    var id = frame.headers.id;
-                    
-                    beforeSendResponse();
-                    
-                    server.sendFrame('MESSAGE', {
-                        'subscription': id,
-                        'message-id': 1,
-                    }).end();
-                };
-                
-                server._ack = function(frame, beforeSendResponse) {
-                    beforeSendResponse();
-                };
-
-                server._nack = fail;
-                server._unsubscribe = fail;
-
-                client.connect('localhost', function() {
-                    
-                    client.subscribe({destination: '/test', ack: 'client-individual'}, function(error, message) {
-                        
-                        message.on('end', function() {
-                            message.ack(function() {
-                                done();
-                            });
-                        });
-                        
-                        message.pipe(new NullWritable());
-                    });
                 });
             });
         });
@@ -822,8 +568,6 @@ describe('Client', function() {
                                 
                                 assert(!error);
                                 
-                                message.ack();
-                                
                                 subscription.unsubscribe();
                                 
                                 client.disconnect(function(error){
@@ -903,7 +647,7 @@ describe('Client', function() {
                                 
                                 assert(!error);
                                 
-                                message.ack();
+                                client.ack(message);
                                 
                                 client.disconnect(function(error){
                                     assert(!error);
@@ -979,8 +723,6 @@ describe('Client', function() {
                             message.readString('utf8', function(error) {
                                 
                                 assert(!error);
-                                
-                                message.ack();
                                 
                                 if(numMessages === 1){
                                     client.disconnect(function(error){
