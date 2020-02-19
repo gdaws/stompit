@@ -18,7 +18,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "qs": "~3.1.0"
+    "qs": "~6.9.1"
   },
   "devDependencies": {
     "jshint": "^2.10.2",
