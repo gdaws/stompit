@@ -76,4 +76,4 @@ npm install --save stompit
 
 ## Documentation
 
-* [API documentation](http://gdaws.github.io/node-stomp/api/)
+* [API documentation](https://gdaws.github.io/stompit/api/)
