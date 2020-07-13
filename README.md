@@ -1,4 +1,4 @@
-# stompit [![Build Status](https://travis-ci.org/gdaws/node-stomp.png)](https://travis-ci.org/gdaws/node-stomp)
+# stompit [![Build Status](https://travis-ci.org/gdaws/stompit.png)](https://travis-ci.org/gdaws/stompit)
 
 A STOMP client library for Node.js that is fully compatible with STOMP 1.0, 1.1 
 and 1.2 servers. The library provides optional fault tolerance features such as 
