@@ -46,7 +46,7 @@ var server1 = {
 var server2 = {
   'host': '172.17.42.2',
   'connectHeaders':{
-    'heart-beat': '5000,5000'
+    'heart-beat': '5000,5000',
     'host': '',
     'login': '',
     'passcode': ''
